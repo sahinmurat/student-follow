@@ -1,36 +1,151 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Öğrenci Soru Takip Sistemi
 
-## Getting Started
+Next.js ve Supabase ile oluşturulmuş bir öğrenci soru çözüm takip uygulaması.
 
-First, run the development server:
+## Özellikler
+
+- ✅ Öğrenci ve Admin girişi
+- ✅ Günlük soru girişi (Matematik, Fizik, Kimya, Biyoloji, Türkçe)
+- ✅ Ders bazlı puan ağırlıkları
+- ✅ GitHub-style aktivite haritası (heatmap)
+- ✅ Haftalık ve aylık istatistikler
+- ✅ Leaderboard sistemi (günlük/haftalık/aylık)
+- ✅ Vercel'e deploy edilmeye hazır
+
+## Puan Ağırlıkları
+
+- Matematik: 2 puan
+- Fizik: 5 puan
+- Kimya: 3 puan
+- Biyoloji: 3 puan
+- Türkçe: 1 puan
+
+## Kurulum
+
+### 1. Bağımlılıkları yükleyin
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Supabase Projesi Oluşturun
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. [Supabase](https://supabase.com) hesabı oluşturun
+2. Yeni bir proje oluşturun
+3. SQL Editor'de `supabase-schema.sql` dosyasındaki SQL kodunu çalıştırın
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 3. Environment Variables Ayarlayın
 
-## Learn More
+`.env.local` dosyasını düzenleyin:
 
-To learn more about Next.js, take a look at the following resources:
+```env
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Supabase URL ve Anon Key'i şu adımlarla bulabilirsiniz:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. Supabase Dashboard > Project Settings > API
+2. `Project URL` ve `anon public` key'i kopyalayın
 
-## Deploy on Vercel
+### 4. Geliştirme Sunucusunu Başlatın
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+````bash
+npm run dev
+```bash
+npm run dev
+````
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Uygulama [http://localhost:3000](http://localhost:3000) adresinde çalışacak.
+
+## Supabase Database Schema
+
+`supabase-schema.sql` dosyası şunları içerir:
+
+- **profiles**: Kullanıcı profilleri (admin/student rolü)
+- **subject_weights**: Ders ağırlıkları
+- **daily_entries**: Günlük soru girişleri
+- Row Level Security (RLS) politikaları
+- Otomatik puan hesaplama fonksiyonları
+
+## İlk Admin Kullanıcısı Oluşturma
+
+1. `/signup` sayfasından kayıt olun
+2. "Rol" seçiminde "Admin" seçin
+3. Kayıt olduktan sonra giriş yapın
+
+## Vercel'e Deploy
+
+### 1. GitHub'a Push Edin
+
+```bash
+git add .
+git commit -m "Initial commit"
+git push origin main
+```
+
+### 2. Vercel'de Deploy Edin
+
+1. [Vercel](https://vercel.com) hesabı oluşturun
+2. "Import Project" ile GitHub repo'nuzu seçin
+3. Environment Variables ekleyin:
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+4. "Deploy" butonuna tıklayın
+
+## Kullanım
+
+### Öğrenci Paneli
+
+- Günlük soru sayılarını girin
+- Haftalık ve aylık istatistiklerinizi görün
+- Aktivite haritanızı takip edin
+
+### Admin Paneli
+
+- Tüm öğrencilerin istatistiklerini görün
+- Günlük/haftalık/aylık sıralamalar
+- En son girilen sorular
+- Toplam istatistikler
+
+## Teknolojiler
+
+- **Framework**: Next.js 15 (App Router)
+- **Dil**: TypeScript
+- **Styling**: Tailwind CSS
+- **Database**: Supabase (PostgreSQL)
+- **Authentication**: Supabase Auth
+- **Tarih**: date-fns
+- **Deployment**: Vercel
+
+## Proje Yapısı
+
+```
+src/
+├── app/
+│   ├── admin/
+│   │   └── dashboard/      # Admin paneli
+│   ├── student/
+│   │   └── dashboard/      # Öğrenci paneli
+│   ├── login/              # Giriş sayfası
+│   ├── signup/             # Kayıt sayfası
+│   └── page.tsx            # Ana sayfa (login'e yönlendirir)
+├── lib/
+│   └── supabase/
+│       ├── client.ts       # Client-side Supabase client
+│       ├── server.ts       # Server-side Supabase client
+│       └── middleware.ts   # Auth middleware
+└── types/
+    └── database.types.ts   # TypeScript türleri
+```
+
+## Güvenlik
+
+- Row Level Security (RLS) aktif
+- Öğrenciler sadece kendi verilerini görebilir ve düzenleyebilir
+- Adminler tüm verileri görebilir
+- Güvenli authentication flow
+
+## Lisans
+
+MIT
