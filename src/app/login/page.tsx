@@ -57,8 +57,8 @@ function LoginForm() {
     }
 
     return (
-        <div className="min-h-screen flex items-center justify-center" style={{backgroundColor: '#008B8B'}}>
-            <div className="max-w-md w-full space-y-8 p-8 bg-white rounded-2xl shadow-2xl" style={{borderWidth: '2px', borderColor: '#008B8B'}}>
+        <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#008B8B' }}>
+            <div className="max-w-md w-full space-y-8 p-8 bg-white rounded-2xl shadow-2xl" style={{ borderWidth: '2px', borderColor: '#008B8B' }}>
                 <div>
                     <h2 className="mt-6 text-center text-3xl font-bold text-gray-900">
                         Soru Takip Sistemi
@@ -100,7 +100,7 @@ function LoginForm() {
                                 value={username}
                                 onChange={(e) => setUsername(e.target.value)}
                                 className="appearance-none relative block w-full px-3 py-2 text-gray-900 font-bold rounded-lg focus:outline-none focus:z-10 sm:text-sm transition-all"
-                                style={{borderWidth: '2px', borderColor: '#008B8B', color: '#4d4d4d'}}
+                                style={{ borderWidth: '2px', borderColor: '#008B8B', color: '#4d4d4d' }}
                                 placeholder="kullaniciadi"
                             />
                         </div>
@@ -117,7 +117,7 @@ function LoginForm() {
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 className="appearance-none relative block w-full px-3 py-2 text-gray-900 font-bold rounded-lg focus:outline-none focus:z-10 sm:text-sm transition-all"
-                                style={{borderWidth: '2px', borderColor: '#008B8B', color: '#4d4d4d'}}
+                                style={{ borderWidth: '2px', borderColor: '#008B8B', color: '#4d4d4d' }}
                                 placeholder="••••••••"
                             />
                         </div>
@@ -128,14 +128,14 @@ function LoginForm() {
                             type="submit"
                             disabled={loading}
                             className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-bold rounded-lg text-white focus:outline-none disabled:opacity-50 transition-all duration-200 shadow-lg hover:shadow-xl"
-                            style={{backgroundColor: '#008B8B'}}
+                            style={{ backgroundColor: '#008B8B' }}
                         >
                             {loading ? 'Giriş yapılıyor...' : 'Giriş Yap'}
                         </button>
                     </div>
 
                     <div className="text-center">
-                        <a href="/signup" className="text-sm font-bold transition-colors" style={{color: '#008B8B'}}>
+                        <a href="/signup" className="text-sm font-bold transition-colors" style={{ color: '#008B8B' }}>
                             Hesabınız yok mu? Kayıt olun
                         </a>
                     </div>
@@ -147,7 +147,7 @@ function LoginForm() {
 
 export default function LoginPage() {
     return (
-        <Suspense fallback={<div className="min-h-screen flex items-center justify-center" style={{backgroundColor: '#008B8B'}}><div className="text-white">Yükleniyor...</div></div>}>
+        <Suspense fallback={<div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#008B8B' }}><div className="text-white">Yükleniyor...</div></div>}>
             <LoginForm />
         </Suspense>
     )

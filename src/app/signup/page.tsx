@@ -48,8 +48,8 @@ export default function SignupPage() {
     }
 
     return (
-        <div className="min-h-screen flex items-center justify-center" style={{backgroundColor: '#008B8B'}}>
-            <div className="max-w-md w-full space-y-8 p-8 bg-white rounded-2xl shadow-2xl" style={{borderWidth: '2px', borderColor: '#008B8B'}}>
+        <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#008B8B' }}>
+            <div className="max-w-md w-full space-y-8 p-8 bg-white rounded-2xl shadow-2xl" style={{ borderWidth: '2px', borderColor: '#008B8B' }}>
                 <div>
                     <h2 className="mt-6 text-center text-3xl font-bold text-gray-900">
                         Kayıt Ol
@@ -77,7 +77,7 @@ export default function SignupPage() {
                                 value={fullName}
                                 onChange={(e) => setFullName(e.target.value)}
                                 className="appearance-none relative block w-full px-3 py-2 text-gray-900 font-bold rounded-lg focus:outline-none sm:text-sm transition-all"
-                                style={{borderWidth: '2px', borderColor: '#008B8B', color: '#4d4d4d'}}
+                                style={{ borderWidth: '2px', borderColor: '#008B8B', color: '#4d4d4d' }}
                                 placeholder="Muster Muster"
                             />
                         </div>
@@ -94,7 +94,7 @@ export default function SignupPage() {
                                 value={username}
                                 onChange={(e) => setUsername(e.target.value)}
                                 className="appearance-none relative block w-full px-3 py-2 text-gray-900 font-bold rounded-lg focus:outline-none sm:text-sm transition-all"
-                                style={{borderWidth: '2px', borderColor: '#008B8B', color: '#4d4d4d'}}
+                                style={{ borderWidth: '2px', borderColor: '#008B8B', color: '#4d4d4d' }}
                                 placeholder="kullaniciadi"
                             />
                         </div>
@@ -111,7 +111,7 @@ export default function SignupPage() {
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 className="appearance-none relative block w-full px-3 py-2 text-gray-900 font-bold rounded-lg focus:outline-none sm:text-sm transition-all"
-                                style={{borderWidth: '2px', borderColor: '#008B8B', color: '#4d4d4d'}}
+                                style={{ borderWidth: '2px', borderColor: '#008B8B', color: '#4d4d4d' }}
                                 placeholder="••••••••"
                             />
                         </div>
@@ -122,14 +122,14 @@ export default function SignupPage() {
                             type="submit"
                             disabled={loading}
                             className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-bold rounded-lg text-white focus:outline-none disabled:opacity-50 transition-all duration-200 shadow-lg hover:shadow-xl"
-                            style={{backgroundColor: '#008B8B'}}
+                            style={{ backgroundColor: '#008B8B' }}
                         >
                             {loading ? 'Kayıt yapılıyor...' : 'Kayıt Ol'}
                         </button>
                     </div>
 
                     <div className="text-center">
-                        <a href="/login" className="text-sm font-bold transition-colors" style={{color: '#008B8B'}}>
+                        <a href="/login" className="text-sm font-bold transition-colors" style={{ color: '#008B8B' }}>
                             Zaten hesabınız var mı? Giriş yapın
                         </a>
                     </div>

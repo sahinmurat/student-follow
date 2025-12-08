@@ -68,7 +68,7 @@ export default function AdminDashboard() {
             const { data: studentsData, error: studentsError } = await supabase
                 .from('profiles')
                 .select('id, full_name, email')
-                // Admin ve student'ları al (sadece student değil)
+            // Admin ve student'ları al (sadece student değil)
 
             console.log('Students loaded:', studentsData)
             console.log('Students error:', studentsError)
