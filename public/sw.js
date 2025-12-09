@@ -1,10 +1,10 @@
 const CACHE_NAME = 'soru-takip-v1';
 const urlsToCache = [
-    '/',
     '/login',
     '/signup',
-    '/student/dashboard',
-    '/admin/dashboard'
+    '/manifest.json',
+    '/icon-192x192.png',
+    '/icon-512x512.png'
 ];
 
 // Install event - cache resources
