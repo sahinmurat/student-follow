@@ -2,7 +2,7 @@
     "name": "Soru Takip Uygulaması",
     "short_name": "Soru Takip",
     "description": "Günlük soru çözümlerini takip et",
-    "start_url": "/",
+    "start_url": "/login",
     "scope": "/",
     "display": "standalone",
     "background_color": "#ffffff",
