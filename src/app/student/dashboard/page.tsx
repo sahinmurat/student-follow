@@ -41,14 +41,14 @@ export default function StudentDashboard() {
     const [profile, setProfile] = useState<Profile | null>(null)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [todayEntry, setTodayEntry] = useState<any>({
-        kk: 0,
-        rsl: 0,
-        prt: 0,
-        cvs: 0,
-        orc: 0,
-        thc: 0,
-        alm: 0,
-        trk: 0,
+        kk: '',
+        rsl: '',
+        prt: '',
+        cvs: '',
+        orc: '',
+        thc: '',
+        alm: '',
+        trk: '',
     })
     const [entries, setEntries] = useState<DailyEntry[]>([])
     const [loading, setLoading] = useState(true)
@@ -102,14 +102,14 @@ export default function StudentDashboard() {
             const todayData = entriesData?.find(e => e.date === today)
             // Input alanlarını sıfırla, çünkü ekleme yapacağız
             setTodayEntry({
-                kk: 0,
-                rsl: 0,
-                prt: 0,
-                cvs: 0,
-                orc: 0,
-                thc: 0,
-                alm: 0,
-                trk: 0,
+                kk: '',
+                rsl: '',
+                prt: '',
+                cvs: '',
+                orc: '',
+                thc: '',
+                alm: '',
+                trk: '',
             })
         } catch (error) {
             console.error('Error loading data:', error)
@@ -169,14 +169,14 @@ export default function StudentDashboard() {
 
             // Input alanlarını sıfırla
             setTodayEntry({
-                kk: 0,
-                rsl: 0,
-                prt: 0,
-                cvs: 0,
-                orc: 0,
-                thc: 0,
-                alm: 0,
-                trk: 0,
+                kk: '',
+                rsl: '',
+                prt: '',
+                cvs: '',
+                orc: '',
+                thc: '',
+                alm: '',
+                trk: '',
             })
 
             setShowSuccess(true)
@@ -275,6 +275,7 @@ export default function StudentDashboard() {
                                 <input
                                     type="number"
                                     min="0"
+                                    placeholder="0"
                                     value={todayEntry[subject.key]}
                                     onChange={(e) =>
                                         setTodayEntry({
