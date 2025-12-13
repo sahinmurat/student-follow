@@ -29,28 +29,51 @@ function LoginForm() {
         try {
             // Convert username to email format for Supabase
             const email = `${username}@local.app`
+            console.log('Giriş deneniyor:', email)
 
             const { data, error } = await supabase.auth.signInWithPassword({
                 email,
                 password,
             })
 
-            if (error) throw error
+            if (error) {
+                console.error('Auth hatası:', error)
+                // Hata mesajını kullanıcıya göster
+                throw error
+            }
+
+            console.log('Auth başarılı, kullanıcı ID:', data.user.id)
 
             // Get user profile to check role
-            const { data: profile } = await supabase
+            const { data: profile, error: profileError } = await supabase
                 .from('profiles')
                 .select('role')
                 .eq('id', data.user.id)
                 .single()
 
-            if (profile?.role === 'admin') {
+            console.log('Profil sorgusu sonucu:', profile, profileError)
+
+            if (profileError || !profile) {
+                console.error('Profil bulunamadı veya hata:', profileError)
+                await supabase.auth.signOut()
+                throw new Error('Giriş yapıldı ancak kullanıcı profili bulunamadı. (Veritabanında profile kaydı yok)')
+            }
+
+            if (profile.role === 'admin') {
                 router.push('/admin/dashboard')
             } else {
                 router.push('/student/dashboard')
             }
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Giriş başarısız')
+            console.error('Login error details:', err)
+            // Supabase hata mesajlarını Türkçeleştir
+            let message = err instanceof Error ? err.message : 'Giriş başarısız'
+            if (message.includes('Invalid login credentials')) {
+                message = 'Kullanıcı adı veya şifre hatalı'
+            } else if (message.includes('Email not confirmed')) {
+                message = 'E-posta adresi doğrulanmamış'
+            }
+            setError(message)
         } finally {
             setLoading(false)
         }

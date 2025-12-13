@@ -57,11 +57,14 @@ export interface Database {
                     id: number
                     user_id: string
                     date: string
-                    math: number
-                    physics: number
-                    chemistry: number
-                    biology: number
-                    turkish: number
+                    kk: number
+                    rsl: number
+                    prt: number
+                    cvs: number
+                    orc: number
+                    thc: number
+                    alm: number
+                    trk: number
                     total_points: number
                     created_at: string
                 }
@@ -69,11 +72,14 @@ export interface Database {
                     id?: number
                     user_id: string
                     date: string
-                    math?: number
-                    physics?: number
-                    chemistry?: number
-                    biology?: number
-                    turkish?: number
+                    kk?: number
+                    rsl?: number
+                    prt?: number
+                    cvs?: number
+                    orc?: number
+                    thc?: number
+                    alm?: number
+                    trk?: number
                     total_points?: number
                     created_at?: string
                 }
@@ -81,11 +87,14 @@ export interface Database {
                     id?: number
                     user_id?: string
                     date?: string
-                    math?: number
-                    physics?: number
-                    chemistry?: number
-                    biology?: number
-                    turkish?: number
+                    kk?: number
+                    rsl?: number
+                    prt?: number
+                    cvs?: number
+                    orc?: number
+                    thc?: number
+                    alm?: number
+                    trk?: number
                     total_points?: number
                     created_at?: string
                 }

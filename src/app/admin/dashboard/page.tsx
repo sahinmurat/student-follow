@@ -16,11 +16,14 @@ interface DailyEntry {
     id: number
     user_id: string
     date: string
-    math: number
-    physics: number
-    chemistry: number
-    biology: number
-    turkish: number
+    kk: number
+    rsl: number
+    prt: number
+    cvs: number
+    orc: number
+    thc: number
+    alm: number
+    trk: number
     total_points: number
 }
 
@@ -59,7 +62,13 @@ export default function AdminDashboard() {
                 .eq('id', user.id)
                 .single()
 
-            if (profile?.role !== 'admin') {
+            if (!profile) {
+                await supabase.auth.signOut()
+                router.push('/login')
+                return
+            }
+
+            if (profile.role !== 'admin') {
                 router.push('/student/dashboard')
                 return
             }
@@ -235,9 +244,6 @@ export default function AdminDashboard() {
                                         Öğrenci
                                     </th>
                                     <th className="px-6 py-3 text-left text-sm font-bold text-gray-900 uppercase">
-                                        Email
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-sm font-bold text-gray-900 uppercase">
                                         Bugün
                                     </th>
                                     <th className="px-6 py-3 text-left text-sm font-bold text-gray-900 uppercase">
@@ -264,9 +270,6 @@ export default function AdminDashboard() {
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <div className="text-sm font-bold text-gray-900">{student.full_name}</div>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="text-sm font-semibold text-gray-700">{student.email}</div>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <span className="text-sm font-bold text-cyan-700">{student.todayPoints}</span>
@@ -301,19 +304,28 @@ export default function AdminDashboard() {
                                         Öğrenci
                                     </th>
                                     <th className="px-6 py-3 text-left text-sm font-bold text-gray-900 uppercase">
-                                        Mat
+                                        KK
                                     </th>
                                     <th className="px-6 py-3 text-left text-sm font-bold text-gray-900 uppercase">
-                                        Fiz
+                                        RSL
                                     </th>
                                     <th className="px-6 py-3 text-left text-sm font-bold text-gray-900 uppercase">
-                                        Kim
+                                        PRT
                                     </th>
                                     <th className="px-6 py-3 text-left text-sm font-bold text-gray-900 uppercase">
-                                        Bio
+                                        CVS
                                     </th>
                                     <th className="px-6 py-3 text-left text-sm font-bold text-gray-900 uppercase">
-                                        Tür
+                                        ORC
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-sm font-bold text-gray-900 uppercase">
+                                        THC
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-sm font-bold text-gray-900 uppercase">
+                                        ALM
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-sm font-bold text-gray-900 uppercase">
+                                        TRK
                                     </th>
                                     <th className="px-6 py-3 text-left text-sm font-bold text-gray-900 uppercase">
                                         Toplam Puan
@@ -331,11 +343,14 @@ export default function AdminDashboard() {
                                             <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
                                                 {student?.full_name || 'Unknown'}
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-700">{entry.math}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-700">{entry.physics}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-700">{entry.chemistry}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-700">{entry.biology}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-700">{entry.turkish}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-700">{entry.kk}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-700">{entry.rsl}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-700">{entry.prt}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-700">{entry.cvs}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-700">{entry.orc}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-700">{entry.thc}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-700">{entry.alm}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-700">{entry.trk}</td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-teal-700">
                                                 {entry.total_points}
                                             </td>

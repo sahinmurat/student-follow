@@ -9,11 +9,14 @@ import { tr } from 'date-fns/locale'
 interface DailyEntry {
     id: number
     date: string
-    math: number
-    physics: number
-    chemistry: number
-    biology: number
-    turkish: number
+    kk: number
+    rsl: number
+    prt: number
+    cvs: number
+    orc: number
+    thc: number
+    alm: number
+    trk: number
     total_points: number
 }
 
@@ -24,21 +27,28 @@ interface Profile {
 }
 
 const SUBJECTS = [
-    { key: 'math', label: 'Matematik', color: 'bg-blue-500' },
-    { key: 'physics', label: 'Fizik', color: 'bg-purple-500' },
-    { key: 'chemistry', label: 'Kimya', color: 'bg-green-500' },
-    { key: 'biology', label: 'Biyoloji', color: 'bg-yellow-500' },
-    { key: 'turkish', label: 'Türkçe', color: 'bg-red-500' },
+    { key: 'kk', label: 'KK', color: 'bg-blue-500' },
+    { key: 'rsl', label: 'RSL', color: 'bg-purple-500' },
+    { key: 'prt', label: 'PRT', color: 'bg-green-500' },
+    { key: 'cvs', label: 'CVS', color: 'bg-yellow-500' },
+    { key: 'orc', label: 'ORC', color: 'bg-red-500' },
+    { key: 'thc', label: 'THC', color: 'bg-indigo-500' },
+    { key: 'alm', label: 'ALM', color: 'bg-pink-500' },
+    { key: 'trk', label: 'TRK', color: 'bg-teal-500' },
 ]
 
 export default function StudentDashboard() {
     const [profile, setProfile] = useState<Profile | null>(null)
-    const [todayEntry, setTodayEntry] = useState<Partial<DailyEntry>>({
-        math: 0,
-        physics: 0,
-        chemistry: 0,
-        biology: 0,
-        turkish: 0,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const [todayEntry, setTodayEntry] = useState<any>({
+        kk: 0,
+        rsl: 0,
+        prt: 0,
+        cvs: 0,
+        orc: 0,
+        thc: 0,
+        alm: 0,
+        trk: 0,
     })
     const [entries, setEntries] = useState<DailyEntry[]>([])
     const [loading, setLoading] = useState(true)
@@ -67,6 +77,12 @@ export default function StudentDashboard() {
                 .eq('id', user.id)
                 .single()
 
+            if (!profileData) {
+                await supabase.auth.signOut()
+                router.push('/login')
+                return
+            }
+
             setProfile(profileData)
 
             // Load all entries
@@ -86,11 +102,14 @@ export default function StudentDashboard() {
             const todayData = entriesData?.find(e => e.date === today)
             // Input alanlarını sıfırla, çünkü ekleme yapacağız
             setTodayEntry({
-                math: 0,
-                physics: 0,
-                chemistry: 0,
-                biology: 0,
-                turkish: 0,
+                kk: 0,
+                rsl: 0,
+                prt: 0,
+                cvs: 0,
+                orc: 0,
+                thc: 0,
+                alm: 0,
+                trk: 0,
             })
         } catch (error) {
             console.error('Error loading data:', error)
@@ -116,22 +135,28 @@ export default function StudentDashboard() {
                 .single()
 
             // Mevcut kayıt varsa üzerine ekle, yoksa yeni değerleri kullan
-            const newMath = (existingEntry?.math || 0) + (todayEntry.math || 0)
-            const newPhysics = (existingEntry?.physics || 0) + (todayEntry.physics || 0)
-            const newChemistry = (existingEntry?.chemistry || 0) + (todayEntry.chemistry || 0)
-            const newBiology = (existingEntry?.biology || 0) + (todayEntry.biology || 0)
-            const newTurkish = (existingEntry?.turkish || 0) + (todayEntry.turkish || 0)
+            const newKk = (existingEntry?.kk || 0) + (Number(todayEntry.kk) || 0)
+            const newRsl = (existingEntry?.rsl || 0) + (Number(todayEntry.rsl) || 0)
+            const newPrt = (existingEntry?.prt || 0) + (Number(todayEntry.prt) || 0)
+            const newCvs = (existingEntry?.cvs || 0) + (Number(todayEntry.cvs) || 0)
+            const newOrc = (existingEntry?.orc || 0) + (Number(todayEntry.orc) || 0)
+            const newThc = (existingEntry?.thc || 0) + (Number(todayEntry.thc) || 0)
+            const newAlm = (existingEntry?.alm || 0) + (Number(todayEntry.alm) || 0)
+            const newTrk = (existingEntry?.trk || 0) + (Number(todayEntry.trk) || 0)
 
             const { data, error } = await supabase
                 .from('daily_entries')
                 .upsert({
                     user_id: user.id,
                     date: today,
-                    math: newMath,
-                    physics: newPhysics,
-                    chemistry: newChemistry,
-                    biology: newBiology,
-                    turkish: newTurkish,
+                    kk: newKk,
+                    rsl: newRsl,
+                    prt: newPrt,
+                    cvs: newCvs,
+                    orc: newOrc,
+                    thc: newThc,
+                    alm: newAlm,
+                    trk: newTrk,
                 }, {
                     onConflict: 'user_id,date'
                 })
@@ -144,11 +169,14 @@ export default function StudentDashboard() {
 
             // Input alanlarını sıfırla
             setTodayEntry({
-                math: 0,
-                physics: 0,
-                chemistry: 0,
-                biology: 0,
-                turkish: 0,
+                kk: 0,
+                rsl: 0,
+                prt: 0,
+                cvs: 0,
+                orc: 0,
+                thc: 0,
+                alm: 0,
+                trk: 0,
             })
 
             setShowSuccess(true)
@@ -247,11 +275,11 @@ export default function StudentDashboard() {
                                 <input
                                     type="number"
                                     min="0"
-                                    value={todayEntry[subject.key as keyof typeof todayEntry] || 0}
+                                    value={todayEntry[subject.key]}
                                     onChange={(e) =>
                                         setTodayEntry({
                                             ...todayEntry,
-                                            [subject.key]: parseInt(e.target.value) || 0,
+                                            [subject.key]: e.target.value === '' ? '' : parseInt(e.target.value),
                                         })
                                     }
                                     className="w-full px-4 py-3 border-2 border-rose-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-transparent text-gray-900 font-semibold text-lg"
@@ -262,11 +290,14 @@ export default function StudentDashboard() {
                     <button
                         onClick={handleSave}
                         disabled={saving || showSuccess || (
-                            (todayEntry.math || 0) === 0 &&
-                            (todayEntry.physics || 0) === 0 &&
-                            (todayEntry.chemistry || 0) === 0 &&
-                            (todayEntry.biology || 0) === 0 &&
-                            (todayEntry.turkish || 0) === 0
+                            (Number(todayEntry.kk) || 0) === 0 &&
+                            (Number(todayEntry.rsl) || 0) === 0 &&
+                            (Number(todayEntry.prt) || 0) === 0 &&
+                            (Number(todayEntry.cvs) || 0) === 0 &&
+                            (Number(todayEntry.orc) || 0) === 0 &&
+                            (Number(todayEntry.thc) || 0) === 0 &&
+                            (Number(todayEntry.alm) || 0) === 0 &&
+                            (Number(todayEntry.trk) || 0) === 0
                         )}
                         className="w-full py-3 px-4 bg-rose-700 text-white font-bold text-lg rounded-lg hover:bg-rose-800 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg transition-all relative"
                     >
@@ -295,19 +326,28 @@ export default function StudentDashboard() {
                                             Tarih
                                         </th>
                                         <th className="px-6 py-3 text-left text-sm font-bold text-gray-900 uppercase">
-                                            Matematik
+                                            KK
                                         </th>
                                         <th className="px-6 py-3 text-left text-sm font-bold text-gray-900 uppercase">
-                                            Fizik
+                                            RSL
                                         </th>
                                         <th className="px-6 py-3 text-left text-sm font-bold text-gray-900 uppercase">
-                                            Kimya
+                                            PRT
                                         </th>
                                         <th className="px-6 py-3 text-left text-sm font-bold text-gray-900 uppercase">
-                                            Biyoloji
+                                            CVS
                                         </th>
                                         <th className="px-6 py-3 text-left text-sm font-bold text-gray-900 uppercase">
-                                            Türkçe
+                                            ORC
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-sm font-bold text-gray-900 uppercase">
+                                            THC
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-sm font-bold text-gray-900 uppercase">
+                                            ALM
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-sm font-bold text-gray-900 uppercase">
+                                            TRK
                                         </th>
                                         <th className="px-6 py-3 text-left text-sm font-bold text-gray-900 uppercase">
                                             Toplam Puan
@@ -321,19 +361,28 @@ export default function StudentDashboard() {
                                                 {format(new Date(entry.date), 'dd MMMM yyyy', { locale: tr })}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
-                                                {entry.math}
+                                                {entry.kk}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
-                                                {entry.physics}
+                                                {entry.rsl}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
-                                                {entry.chemistry}
+                                                {entry.prt}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
-                                                {entry.biology}
+                                                {entry.cvs}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
-                                                {entry.turkish}
+                                                {entry.orc}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
+                                                {entry.thc}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
+                                                {entry.alm}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
+                                                {entry.trk}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-lg font-bold text-rose-800">
                                                 {entry.total_points}
