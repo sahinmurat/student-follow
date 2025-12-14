@@ -11,13 +11,44 @@ export default function PWARegister() {
         // Service Worker kaydı
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker
-                .register('/sw.js')
+                .register('/sw.js', { updateViaCache: 'none' })
                 .then((registration) => {
                     console.log('Service Worker registered:', registration)
+                    
+                    // Yeni Service Worker yüklendiğinde otomatik güncelle
+                    registration.addEventListener('updatefound', () => {
+                        const newWorker = registration.installing
+                        if (newWorker) {
+                            newWorker.addEventListener('statechange', () => {
+                                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                    // Yeni versiyon var, sayfayı yenile
+                                    console.log('Yeni versiyon bulundu, sayfa yenileniyor...')
+                                    window.location.reload()
+                                }
+                            })
+                        }
+                    })
+                    
+                    // Her sayfada güncelleme kontrolü yap
+                    registration.update()
+                    
+                    // Her 5 dakikada bir güncelleme kontrolü yap
+                    setInterval(() => {
+                        registration.update()
+                    }, 5 * 60 * 1000)
                 })
                 .catch((error) => {
                     console.log('Service Worker registration failed:', error)
                 })
+                
+            // Service Worker değiştiğinde sayfayı yenile
+            let refreshing = false
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                if (!refreshing) {
+                    refreshing = true
+                    window.location.reload()
+                }
+            })
         }
 
         // iOS kontrolü

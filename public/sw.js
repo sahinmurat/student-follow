@@ -1,4 +1,4 @@
-const CACHE_NAME = 'soru-takip-v3';
+const CACHE_NAME = 'soru-takip-v4';
 const urlsToCache = [
     '/',
     '/login',
