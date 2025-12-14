@@ -1,5 +1,6 @@
-const CACHE_NAME = 'soru-takip-v2';
+const CACHE_NAME = 'soru-takip-v3';
 const urlsToCache = [
+    '/',
     '/login',
     '/signup',
     '/manifest.json',
@@ -36,35 +37,34 @@ self.addEventListener('activate', (event) => {
     self.clients.claim();
 });
 
-// Fetch event - serve from cache, fallback to network
+// Fetch event - Network First, fallback to Cache
 self.addEventListener('fetch', (event) => {
+    // Sadece http/https isteklerini işle (chrome-extension vb. hariç)
+    if (!event.request.url.startsWith('http')) {
+        return;
+    }
+
     event.respondWith(
-        caches.match(event.request)
+        fetch(event.request)
             .then((response) => {
-                // Cache hit - return response
-                if (response) {
+                // Network başarılı ise
+                // Yanıt geçerli mi kontrol et
+                if (!response || response.status !== 200 || response.type !== 'basic') {
                     return response;
                 }
 
-                // Clone the request
-                const fetchRequest = event.request.clone();
+                // Yanıtı klonla ve cache'e at (bir sonraki offline kullanım için)
+                const responseToCache = response.clone();
+                caches.open(CACHE_NAME)
+                    .then((cache) => {
+                        cache.put(event.request, responseToCache);
+                    });
 
-                return fetch(fetchRequest).then((response) => {
-                    // Check if valid response
-                    if (!response || response.status !== 200 || response.type !== 'basic') {
-                        return response;
-                    }
-
-                    // Clone the response
-                    const responseToCache = response.clone();
-
-                    caches.open(CACHE_NAME)
-                        .then((cache) => {
-                            cache.put(event.request, responseToCache);
-                        });
-
-                    return response;
-                });
+                return response;
+            })
+            .catch(() => {
+                // Network başarısız ise (offline) cache'den dön
+                return caches.match(event.request);
             })
     );
 });

@@ -3,8 +3,9 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { format, startOfMonth } from 'date-fns'
+import { format, startOfMonth, subDays, eachDayOfInterval } from 'date-fns'
 import { tr } from 'date-fns/locale'
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 
 interface DailyEntry {
     id: number
@@ -17,6 +18,7 @@ interface DailyEntry {
     thc: number
     alm: number
     trk: number
+    slvt: number
     total_points: number
 }
 
@@ -35,12 +37,14 @@ const SUBJECTS = [
     { key: 'thc', label: 'THC', color: 'bg-indigo-500' },
     { key: 'alm', label: 'ALM', color: 'bg-pink-500' },
     { key: 'trk', label: 'TRK', color: 'bg-teal-500' },
+    { key: 'slvt', label: 'SLVT', color: 'bg-orange-500' },
 ]
 
 export default function StudentDashboard() {
     const [profile, setProfile] = useState<Profile | null>(null)
+    const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'))
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const [todayEntry, setTodayEntry] = useState<any>({
+    const [formData, setFormData] = useState<any>({
         kk: '',
         rsl: '',
         prt: '',
@@ -49,6 +53,7 @@ export default function StudentDashboard() {
         thc: 0,
         alm: '',
         trk: '',
+        slvt: '',
     })
     const [entries, setEntries] = useState<DailyEntry[]>([])
     const [loading, setLoading] = useState(true)
@@ -61,6 +66,35 @@ export default function StudentDashboard() {
         loadData()
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
+
+    useEffect(() => {
+        const entry = entries.find(e => e.date === selectedDate)
+        if (entry) {
+            setFormData({
+                kk: entry.kk,
+                rsl: entry.rsl,
+                prt: entry.prt,
+                cvs: entry.cvs,
+                orc: entry.orc,
+                thc: entry.thc,
+                alm: entry.alm,
+                trk: entry.trk,
+                slvt: entry.slvt,
+            })
+        } else {
+            setFormData({
+                kk: '',
+                rsl: '',
+                prt: '',
+                cvs: '',
+                orc: 0,
+                thc: 0,
+                alm: '',
+                trk: '',
+                slvt: '',
+            })
+        }
+    }, [selectedDate, entries])
 
     const loadData = async () => {
         try {
@@ -97,20 +131,6 @@ export default function StudentDashboard() {
 
             setEntries(entriesData || [])
 
-            // Load today's entry
-            const today = format(new Date(), 'yyyy-MM-dd')
-            const todayData = entriesData?.find(e => e.date === today)
-            // Input alanlarını sıfırla, çünkü ekleme yapacağız
-            setTodayEntry({
-                kk: '',
-                rsl: '',
-                prt: '',
-                cvs: '',
-                orc: 0,
-                thc: 0,
-                alm: '',
-                trk: '',
-            })
         } catch (error) {
             console.error('Error loading data:', error)
         } finally {
@@ -124,39 +144,20 @@ export default function StudentDashboard() {
             const { data: { user } } = await supabase.auth.getUser()
             if (!user) return
 
-            const today = format(new Date(), 'yyyy-MM-dd')
-
-            // Önce bugünün mevcut kaydını çek
-            const { data: existingEntry } = await supabase
-                .from('daily_entries')
-                .select('*')
-                .eq('user_id', user.id)
-                .eq('date', today)
-                .single()
-
-            // Mevcut kayıt varsa üzerine ekle, yoksa yeni değerleri kullan
-            const newKk = (existingEntry?.kk || 0) + (Number(todayEntry.kk) || 0)
-            const newRsl = (existingEntry?.rsl || 0) + (Number(todayEntry.rsl) || 0)
-            const newPrt = (existingEntry?.prt || 0) + (Number(todayEntry.prt) || 0)
-            const newCvs = (existingEntry?.cvs || 0) + (Number(todayEntry.cvs) || 0)
-            const newOrc = (existingEntry?.orc || 0) + (Number(todayEntry.orc) || 0)
-            const newThc = (existingEntry?.thc || 0) + (Number(todayEntry.thc) || 0)
-            const newAlm = (existingEntry?.alm || 0) + (Number(todayEntry.alm) || 0)
-            const newTrk = (existingEntry?.trk || 0) + (Number(todayEntry.trk) || 0)
-
             const { data, error } = await supabase
                 .from('daily_entries')
                 .upsert({
                     user_id: user.id,
-                    date: today,
-                    kk: newKk,
-                    rsl: newRsl,
-                    prt: newPrt,
-                    cvs: newCvs,
-                    orc: newOrc,
-                    thc: newThc,
-                    alm: newAlm,
-                    trk: newTrk,
+                    date: selectedDate,
+                    kk: Number(formData.kk) || 0,
+                    rsl: Number(formData.rsl) || 0,
+                    prt: Number(formData.prt) || 0,
+                    cvs: Number(formData.cvs) || 0,
+                    orc: Number(formData.orc) || 0,
+                    thc: Number(formData.thc) || 0,
+                    alm: Number(formData.alm) || 0,
+                    trk: Number(formData.trk) || 0,
+                    slvt: Number(formData.slvt) || 0,
                 }, {
                     onConflict: 'user_id,date'
                 })
@@ -166,18 +167,6 @@ export default function StudentDashboard() {
             console.log('Save error:', error)
 
             if (error) throw error
-
-            // Input alanlarını sıfırla
-            setTodayEntry({
-                kk: '',
-                rsl: '',
-                prt: '',
-                cvs: '',
-                orc: 0,
-                thc: 0,
-                alm: '',
-                trk: '',
-            })
 
             setShowSuccess(true)
             setTimeout(() => setShowSuccess(false), 2000)
@@ -220,6 +209,25 @@ export default function StudentDashboard() {
             return entryDate >= monthStart
         })
         .reduce((sum, e) => sum + e.total_points, 0)
+
+    // Prepare chart data
+    const prepareChartData = (days: number) => {
+        const endDate = new Date()
+        const startDate = subDays(endDate, days - 1)
+        const interval = eachDayOfInterval({ start: startDate, end: endDate })
+
+        return interval.map(date => {
+            const dateStr = format(date, 'yyyy-MM-dd')
+            const entry = entries.find(e => e.date === dateStr)
+            return {
+                date: format(date, 'd MMM', { locale: tr }),
+                puan: entry ? entry.total_points : 0
+            }
+        })
+    }
+
+    const weeklyChartData = prepareChartData(7)
+    const monthlyChartData = prepareChartData(30)
 
     return (
         <div className="min-h-screen bg-rose-50">
@@ -265,7 +273,25 @@ export default function StudentDashboard() {
 
                 {/* Today's Entry Form */}
                 <div className="bg-white rounded-xl shadow-lg p-6 mb-8 border-2 border-rose-200">
-                    <h2 className="text-2xl font-bold mb-6 text-gray-900">Bugünün Soruları ({format(new Date(), 'dd MMMM yyyy', { locale: tr })})</h2>
+                    <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
+                        <h2 className="text-2xl font-bold text-gray-900">
+                            {selectedDate === format(new Date(), 'yyyy-MM-dd')
+                                ? `Bugünün Soruları (${format(new Date(), 'dd MMMM yyyy', { locale: tr })})`
+                                : `${format(new Date(selectedDate), 'dd MMMM yyyy', { locale: tr })} Kayıtları`
+                            }
+                        </h2>
+                        <div className="flex items-center gap-2">
+                            <label htmlFor="date-picker" className="text-sm font-bold text-gray-700">Tarih Seç:</label>
+                            <input
+                                id="date-picker"
+                                type="date"
+                                value={selectedDate}
+                                onChange={(e) => setSelectedDate(e.target.value)}
+                                max={format(new Date(), 'yyyy-MM-dd')}
+                                className="px-3 py-2 border-2 border-rose-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-transparent text-gray-900 font-semibold"
+                            />
+                        </div>
+                    </div>
                     <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
                         {SUBJECTS.map((subject, index) => {
                             // ORC ve THC'yi yan yana göstermek için
@@ -281,10 +307,10 @@ export default function StudentDashboard() {
                                             <div className="flex items-center">
                                                 <input
                                                     type="checkbox"
-                                                    checked={todayEntry[subject.key] === 1}
+                                                    checked={formData[subject.key] === 1}
                                                     onChange={(e) =>
-                                                        setTodayEntry({
-                                                            ...todayEntry,
+                                                        setFormData({
+                                                            ...formData,
                                                             [subject.key]: e.target.checked ? 1 : 0,
                                                         })
                                                     }
@@ -301,10 +327,10 @@ export default function StudentDashboard() {
                                                 <div className="flex items-center">
                                                     <input
                                                         type="checkbox"
-                                                        checked={todayEntry[thcSubject.key] === 1}
+                                                        checked={formData[thcSubject.key] === 1}
                                                         onChange={(e) =>
-                                                            setTodayEntry({
-                                                                ...todayEntry,
+                                                            setFormData({
+                                                                ...formData,
                                                                 [thcSubject.key]: e.target.checked ? 1 : 0,
                                                             })
                                                         }
@@ -331,10 +357,10 @@ export default function StudentDashboard() {
                                     <input
                                         type="number"
                                         min="0"
-                                        value={todayEntry[subject.key]}
+                                        value={formData[subject.key]}
                                         onChange={(e) =>
-                                            setTodayEntry({
-                                                ...todayEntry,
+                                            setFormData({
+                                                ...formData,
                                                 [subject.key]: e.target.value,
                                             })
                                         }
@@ -347,14 +373,15 @@ export default function StudentDashboard() {
                     <button
                         onClick={handleSave}
                         disabled={saving || showSuccess || (
-                            (Number(todayEntry.kk) || 0) === 0 &&
-                            (Number(todayEntry.rsl) || 0) === 0 &&
-                            (Number(todayEntry.prt) || 0) === 0 &&
-                            (Number(todayEntry.cvs) || 0) === 0 &&
-                            (Number(todayEntry.orc) || 0) === 0 &&
-                            (Number(todayEntry.thc) || 0) === 0 &&
-                            (Number(todayEntry.alm) || 0) === 0 &&
-                            (Number(todayEntry.trk) || 0) === 0
+                            (Number(formData.kk) || 0) === 0 &&
+                            (Number(formData.rsl) || 0) === 0 &&
+                            (Number(formData.prt) || 0) === 0 &&
+                            (Number(formData.cvs) || 0) === 0 &&
+                            (Number(formData.orc) || 0) === 0 &&
+                            (Number(formData.thc) || 0) === 0 &&
+                            (Number(formData.alm) || 0) === 0 &&
+                            (Number(formData.trk) || 0) === 0 &&
+                            (Number(formData.slvt) || 0) === 0
                         )}
                         className="w-full py-3 px-4 bg-rose-700 text-white font-bold text-lg rounded-lg hover:bg-rose-800 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg transition-all relative"
                     >
@@ -407,6 +434,9 @@ export default function StudentDashboard() {
                                             TRK
                                         </th>
                                         <th className="px-6 py-3 text-left text-sm font-bold text-gray-900 uppercase">
+                                            SLVT
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-sm font-bold text-gray-900 uppercase">
                                             Toplam Puan
                                         </th>
                                     </tr>
@@ -441,6 +471,9 @@ export default function StudentDashboard() {
                                             <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
                                                 {entry.trk}
                                             </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
+                                                {entry.slvt}
+                                            </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-lg font-bold text-rose-800">
                                                 {entry.total_points}
                                             </td>
@@ -450,6 +483,41 @@ export default function StudentDashboard() {
                             </table>
                         </div>
                     )}
+                </div>
+
+                {/* Charts Section */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
+                    {/* Weekly Chart */}
+                    <div className="bg-white rounded-xl shadow-lg p-6 border-2 border-rose-200">
+                        <h3 className="text-xl font-bold mb-4 text-gray-900">Haftalık Gelişim</h3>
+                        <div className="h-64">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <LineChart data={weeklyChartData}>
+                                    <CartesianGrid strokeDasharray="3 3" />
+                                    <XAxis dataKey="date" />
+                                    <YAxis />
+                                    <Tooltip />
+                                    <Line type="monotone" dataKey="puan" stroke="#be123c" strokeWidth={2} name="Puan" />
+                                </LineChart>
+                            </ResponsiveContainer>
+                        </div>
+                    </div>
+
+                    {/* Monthly Chart */}
+                    <div className="bg-white rounded-xl shadow-lg p-6 border-2 border-rose-200">
+                        <h3 className="text-xl font-bold mb-4 text-gray-900">Aylık Gelişim</h3>
+                        <div className="h-64">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <LineChart data={monthlyChartData}>
+                                    <CartesianGrid strokeDasharray="3 3" />
+                                    <XAxis dataKey="date" />
+                                    <YAxis />
+                                    <Tooltip />
+                                    <Line type="monotone" dataKey="puan" stroke="#be123c" strokeWidth={2} name="Puan" />
+                                </LineChart>
+                            </ResponsiveContainer>
+                        </div>
+                    </div>
                 </div>
             </main>
         </div>
