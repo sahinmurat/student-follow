@@ -70,7 +70,7 @@ export default function PWARegister() {
             // Kullanıcıya kurulum butonunu göster
             setShowInstallPrompt(true)
         }
-        
+
         // Debug için
         console.log('PWA Register initialized')
         console.log('Is iOS:', isIosDevice && !isStandalone)
