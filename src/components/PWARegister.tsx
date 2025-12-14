@@ -8,6 +8,13 @@ export default function PWARegister() {
     const [isIOS, setIsIOS] = useState(false)
 
     useEffect(() => {
+        // Standalone mod kontrolü
+        const isStandalone = window.matchMedia('(display-mode: standalone)').matches
+        if (isStandalone) {
+            console.log('App is in standalone mode')
+            return // Zaten yüklü ise hiçbir şey yapma
+        }
+
         // Service Worker kaydı
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker
