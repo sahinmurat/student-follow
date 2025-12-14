@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { format, startOfMonth, subDays, eachDayOfInterval } from 'date-fns'
@@ -19,6 +19,7 @@ interface DailyEntry {
     alm: number
     trk: number
     slvt: number
+    notes?: string
     total_points: number
 }
 
@@ -26,6 +27,7 @@ interface Profile {
     full_name: string
     email: string
     role?: string
+    dashboard_note?: string
 }
 
 const SUBJECTS = [
@@ -54,11 +56,17 @@ export default function StudentDashboard() {
         alm: '',
         trk: '',
         slvt: '',
+        notes: '',
     })
     const [entries, setEntries] = useState<DailyEntry[]>([])
+    const [dashboardNote, setDashboardNote] = useState('')
+    const [savingNote, setSavingNote] = useState(false)
+    const [isEditingNote, setIsEditingNote] = useState(false)
+    const [showNoteSuccess, setShowNoteSuccess] = useState(false)
     const [loading, setLoading] = useState(true)
     const [saving, setSaving] = useState(false)
     const [showSuccess, setShowSuccess] = useState(false)
+    const [selectedNote, setSelectedNote] = useState<{ date: string, note: string } | null>(null)
     const router = useRouter()
     const supabase = createClient()
 
@@ -80,6 +88,7 @@ export default function StudentDashboard() {
                 alm: entry.alm,
                 trk: entry.trk,
                 slvt: entry.slvt,
+                notes: entry.notes || '',
             })
         } else {
             setFormData({
@@ -92,6 +101,7 @@ export default function StudentDashboard() {
                 alm: '',
                 trk: '',
                 slvt: '',
+                notes: '',
             })
         }
     }, [selectedDate, entries])
@@ -107,7 +117,7 @@ export default function StudentDashboard() {
             // Load profile
             const { data: profileData } = await supabase
                 .from('profiles')
-                .select('full_name, email, role')
+                .select('full_name, email, role, dashboard_note')
                 .eq('id', user.id)
                 .single()
 
@@ -118,6 +128,7 @@ export default function StudentDashboard() {
             }
 
             setProfile(profileData)
+            setDashboardNote(profileData.dashboard_note || '')
 
             // Load all entries
             const { data: entriesData, error: entriesError } = await supabase
@@ -135,6 +146,35 @@ export default function StudentDashboard() {
             console.error('Error loading data:', error)
         } finally {
             setLoading(false)
+        }
+    }
+
+    const handleSaveNote = async () => {
+        setSavingNote(true)
+        try {
+            const { data: { user } } = await supabase.auth.getUser()
+            if (!user) return
+
+            const { error } = await supabase
+                .from('profiles')
+                .update({ dashboard_note: dashboardNote })
+                .eq('id', user.id)
+
+            if (error) throw error
+
+            // Update local profile state
+            if (profile) {
+                setProfile({ ...profile, dashboard_note: dashboardNote })
+            }
+
+            setIsEditingNote(false)
+            setShowNoteSuccess(true)
+            setTimeout(() => setShowNoteSuccess(false), 2000)
+        } catch (error) {
+            console.error('Error saving note:', error)
+            alert('Not kaydedilirken hata oluştu')
+        } finally {
+            setSavingNote(false)
         }
     }
 
@@ -158,6 +198,7 @@ export default function StudentDashboard() {
                     alm: Number(formData.alm) || 0,
                     trk: Number(formData.trk) || 0,
                     slvt: Number(formData.slvt) || 0,
+                    notes: formData.notes,
                 }, {
                     onConflict: 'user_id,date'
                 })
@@ -180,6 +221,58 @@ export default function StudentDashboard() {
         }
     }
 
+    const weeklyTotal = useMemo(() => {
+        return entries
+            .filter(e => {
+                const entryDate = new Date(e.date)
+                const weekAgo = new Date()
+                weekAgo.setDate(weekAgo.getDate() - 7)
+                return entryDate >= weekAgo
+            })
+            .reduce((sum, e) => sum + e.total_points, 0)
+    }, [entries])
+
+    const monthlyTotal = useMemo(() => {
+        return entries
+            .filter(e => {
+                const entryDate = new Date(e.date)
+                const monthStart = startOfMonth(new Date())
+                return entryDate >= monthStart
+            })
+            .reduce((sum, e) => sum + e.total_points, 0)
+    }, [entries])
+
+    // Prepare chart data
+    const weeklyChartData = useMemo(() => {
+        const endDate = new Date()
+        const startDate = subDays(endDate, 6)
+        const interval = eachDayOfInterval({ start: startDate, end: endDate })
+
+        return interval.map(date => {
+            const dateStr = format(date, 'yyyy-MM-dd')
+            const entry = entries.find(e => e.date === dateStr)
+            return {
+                date: format(date, 'd MMM', { locale: tr }),
+                puan: entry ? entry.total_points : 0
+            }
+        })
+    }, [entries])
+
+    const monthlyChartData = useMemo(() => {
+        const endDate = new Date()
+        const startDate = subDays(endDate, 29)
+        const interval = eachDayOfInterval({ start: startDate, end: endDate })
+
+        return interval.map(date => {
+            const dateStr = format(date, 'yyyy-MM-dd')
+            const entry = entries.find(e => e.date === dateStr)
+            return {
+                date: format(date, 'd MMM', { locale: tr }),
+                puan: entry ? entry.total_points : 0
+            }
+        })
+    }, [entries])
+
     const handleLogout = async () => {
         await supabase.auth.signOut()
         router.push('/login')
@@ -192,42 +285,6 @@ export default function StudentDashboard() {
             </div>
         )
     }
-
-    const weeklyTotal = entries
-        .filter(e => {
-            const entryDate = new Date(e.date)
-            const weekAgo = new Date()
-            weekAgo.setDate(weekAgo.getDate() - 7)
-            return entryDate >= weekAgo
-        })
-        .reduce((sum, e) => sum + e.total_points, 0)
-
-    const monthlyTotal = entries
-        .filter(e => {
-            const entryDate = new Date(e.date)
-            const monthStart = startOfMonth(new Date())
-            return entryDate >= monthStart
-        })
-        .reduce((sum, e) => sum + e.total_points, 0)
-
-    // Prepare chart data
-    const prepareChartData = (days: number) => {
-        const endDate = new Date()
-        const startDate = subDays(endDate, days - 1)
-        const interval = eachDayOfInterval({ start: startDate, end: endDate })
-
-        return interval.map(date => {
-            const dateStr = format(date, 'yyyy-MM-dd')
-            const entry = entries.find(e => e.date === dateStr)
-            return {
-                date: format(date, 'd MMM', { locale: tr }),
-                puan: entry ? entry.total_points : 0
-            }
-        })
-    }
-
-    const weeklyChartData = prepareChartData(7)
-    const monthlyChartData = prepareChartData(30)
 
     return (
         <div className="min-h-screen bg-rose-50">
@@ -259,15 +316,77 @@ export default function StudentDashboard() {
             </nav>
 
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                {/* Statistics Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                    <div className="bg-rose-700 rounded-xl shadow-lg p-6 text-white">
-                        <h3 className="text-lg font-bold mb-2">Haftalık Toplam</h3>
-                        <p className="text-4xl font-bold">{weeklyTotal} puan</p>
+                {/* Dashboard Note */}
+                <div className="bg-white rounded-xl shadow-lg px-6 pt-4 pb-3 mb-8 border-2 border-rose-200 relative">
+                    <div className="flex items-start gap-3">
+                        <div className="flex-1">
+                            {isEditingNote ? (
+                                <textarea
+                                    value={dashboardNote}
+                                    onChange={(e) => setDashboardNote(e.target.value)}
+                                    className="w-full px-0 py-2 border-0 focus:outline-none text-gray-900 font-medium resize-none bg-transparent"
+                                    placeholder="Kişisel notunuzu girebilirsiniz..."
+                                    autoFocus
+                                    rows={2}
+                                />
+                            ) : (
+                                <div
+                                    className="w-full py-2 border-0 text-gray-900 font-medium whitespace-pre-wrap cursor-pointer hover:bg-rose-50 transition-colors min-h-[3rem] rounded-lg"
+                                    onClick={() => setIsEditingNote(true)}
+                                >
+                                    {dashboardNote || <span className="text-gray-400 italic">Kişisel notunuzu girebilirsiniz...</span>}
+                                </div>
+                            )}
+                        </div>
+                        <button
+                            onClick={() => {
+                                if (isEditingNote) {
+                                    handleSaveNote()
+                                } else {
+                                    setIsEditingNote(true)
+                                }
+                            }}
+                            disabled={savingNote}
+                            className="flex-shrink-0 p-2 text-rose-600 hover:bg-rose-50 rounded-full transition-colors mt-1"
+                            title={isEditingNote ? "Kaydet" : "Düzenle"}
+                        >
+                            {savingNote ? (
+                                // Loading Spinner
+                                <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                            ) : showNoteSuccess ? (
+                                // Checkmark
+                                <svg className="h-5 w-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                </svg>
+                            ) : isEditingNote ? (
+                                // Save Icon
+                                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+                                </svg>
+                            ) : (
+                                // Pencil Icon
+                                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                </svg>
+                            )}
+                        </button>
                     </div>
-                    <div className="bg-pink-700 rounded-xl shadow-lg p-6 text-white">
-                        <h3 className="text-lg font-bold mb-2">Aylık Toplam</h3>
-                        <p className="text-4xl font-bold">{monthlyTotal} puan</p>
+                </div>
+
+                {/* Statistics Summary */}
+                <div className="bg-white rounded-xl shadow-md p-4 mb-6 border border-rose-200">
+                    <div className="grid grid-cols-2 gap-4 divide-x divide-rose-100">
+                        <div className="text-center">
+                            <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Haftalık</h3>
+                            <p className="text-2xl font-bold text-rose-700">{weeklyTotal}</p>
+                        </div>
+                        <div className="text-center pl-4">
+                            <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Aylık</h3>
+                            <p className="text-2xl font-bold text-pink-700">{monthlyTotal}</p>
+                        </div>
                     </div>
                 </div>
 
@@ -292,13 +411,13 @@ export default function StudentDashboard() {
                             />
                         </div>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
+                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
                         {SUBJECTS.map((subject, index) => {
                             // ORC ve THC'yi yan yana göstermek için
                             if (subject.key === 'orc') {
                                 const thcSubject = SUBJECTS.find(s => s.key === 'thc')
                                 return (
-                                    <div key="orc-thc" className="grid grid-cols-2 gap-4 md:col-span-2">
+                                    <div key="orc-thc" className="grid grid-cols-2 gap-4 col-span-2 md:col-span-2">
                                         {/* ORC */}
                                         <div>
                                             <label className="block text-sm font-bold text-gray-900 mb-2">
@@ -370,6 +489,20 @@ export default function StudentDashboard() {
                             )
                         })}
                     </div>
+
+                    {/* Notes Input */}
+                    <div className="mb-6">
+                        <label className="block text-sm font-bold text-gray-900 mb-2">
+                            Günün Notları
+                        </label>
+                        <textarea
+                            value={formData.notes}
+                            onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                            className="w-full px-3 py-2 border-2 border-rose-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-transparent text-gray-900 font-medium min-h-[100px]"
+                            placeholder="Bugün neler yaptınız?"
+                        />
+                    </div>
+
                     <button
                         onClick={handleSave}
                         disabled={saving || showSuccess || (
@@ -437,6 +570,9 @@ export default function StudentDashboard() {
                                             SLVT
                                         </th>
                                         <th className="px-6 py-3 text-left text-sm font-bold text-gray-900 uppercase">
+                                            Notlar
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-sm font-bold text-gray-900 uppercase">
                                             Toplam Puan
                                         </th>
                                     </tr>
@@ -473,6 +609,19 @@ export default function StudentDashboard() {
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
                                                 {entry.slvt}
+                                            </td>
+                                            <td className="px-4 py-4 text-sm text-gray-700 max-w-[200px]">
+                                                {entry.notes ? (
+                                                    <div
+                                                        className="line-clamp-2 cursor-pointer hover:text-rose-600 transition-colors"
+                                                        onClick={() => setSelectedNote({ date: format(new Date(entry.date), 'dd MMMM yyyy', { locale: tr }), note: entry.notes! })}
+                                                        title="Tam notu görmek için tıklayın"
+                                                    >
+                                                        {entry.notes}
+                                                    </div>
+                                                ) : (
+                                                    <span className="text-gray-400">-</span>
+                                                )}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-lg font-bold text-rose-800">
                                                 {entry.total_points}
@@ -520,6 +669,34 @@ export default function StudentDashboard() {
                     </div>
                 </div>
             </main>
+
+            {/* Not Modal */}
+            {selectedNote && (
+                <div
+                    className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+                    onClick={() => setSelectedNote(null)}
+                >
+                    <div
+                        className="bg-white rounded-lg shadow-xl max-w-lg w-full max-h-[80vh] overflow-auto"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="sticky top-0 bg-rose-600 text-white px-6 py-4 flex justify-between items-center rounded-t-lg">
+                            <h3 className="font-semibold">{selectedNote.date}</h3>
+                            <button
+                                onClick={() => setSelectedNote(null)}
+                                className="text-white hover:text-rose-100 transition-colors"
+                            >
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                        <div className="px-6 py-4">
+                            <p className="text-gray-700 whitespace-pre-wrap">{selectedNote.note}</p>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     )
 }
