@@ -68,8 +68,8 @@ export default function PWARegister() {
         // PWA kurulum isteğini yakalama
         const handleBeforeInstallPrompt = (e: any) => {
             console.log('beforeinstallprompt event triggered!')
-            // Tarayıcının otomatik istemini engelle
-            e.preventDefault()
+            // Tarayıcının otomatik istemini engellemiyoruz ki native bar çıksın
+            // e.preventDefault()
             // İstemi daha sonra kullanmak üzere sakla
             setDeferredPrompt(e)
             // Kullanıcıya kurulum butonunu göster
