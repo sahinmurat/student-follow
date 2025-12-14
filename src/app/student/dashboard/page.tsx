@@ -393,7 +393,7 @@ export default function StudentDashboard() {
                 {/* Today's Entry Form */}
                 <div className="bg-white rounded-xl shadow-lg p-6 mb-8 border-2 border-rose-200">
                     <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
-                        <h2 className="text-2xl font-bold text-gray-900">
+                        <h2 className="text-xl font-bold text-gray-900">
                             {selectedDate === format(new Date(), 'yyyy-MM-dd')
                                 ? `Bugünün Soruları (${format(new Date(), 'dd MMMM yyyy', { locale: tr })})`
                                 : `${format(new Date(selectedDate), 'dd MMMM yyyy', { locale: tr })} Kayıtları`
@@ -411,7 +411,7 @@ export default function StudentDashboard() {
                             />
                         </div>
                     </div>
-                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+                    <div className="grid grid-cols-3 md:grid-cols-5 gap-4 mb-6">
                         {SUBJECTS.map((subject, index) => {
                             // ORC ve THC'yi yan yana göstermek için
                             if (subject.key === 'orc') {

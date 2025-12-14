@@ -12,7 +12,6 @@ export default function PWARegister() {
         const isStandalone = window.matchMedia('(display-mode: standalone)').matches
         if (isStandalone) {
             console.log('App is in standalone mode')
-            return // Zaten yüklü ise hiçbir şey yapma
         }
 
         // Service Worker kaydı
@@ -61,7 +60,6 @@ export default function PWARegister() {
         // iOS kontrolü
         const userAgent = window.navigator.userAgent.toLowerCase();
         const isIosDevice = /iphone|ipad|ipod/.test(userAgent);
-        const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
 
         if (isIosDevice && !isStandalone) {
             setIsIOS(true);
