@@ -45,8 +45,8 @@ export default function StudentDashboard() {
         rsl: '',
         prt: '',
         cvs: '',
-        orc: '',
-        thc: '',
+        orc: 0,
+        thc: 0,
         alm: '',
         trk: '',
     })
@@ -106,8 +106,8 @@ export default function StudentDashboard() {
                 rsl: '',
                 prt: '',
                 cvs: '',
-                orc: '',
-                thc: '',
+                orc: 0,
+                thc: 0,
                 alm: '',
                 trk: '',
             })
@@ -173,8 +173,8 @@ export default function StudentDashboard() {
                 rsl: '',
                 prt: '',
                 cvs: '',
-                orc: '',
-                thc: '',
+                orc: 0,
+                thc: 0,
                 alm: '',
                 trk: '',
             })
@@ -267,26 +267,82 @@ export default function StudentDashboard() {
                 <div className="bg-white rounded-xl shadow-lg p-6 mb-8 border-2 border-rose-200">
                     <h2 className="text-2xl font-bold mb-6 text-gray-900">Bugünün Soruları ({format(new Date(), 'dd MMMM yyyy', { locale: tr })})</h2>
                     <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
-                        {SUBJECTS.map(subject => (
-                            <div key={subject.key}>
-                                <label className="block text-sm font-bold text-gray-900 mb-2">
-                                    {subject.label}
-                                </label>
-                                <input
-                                    type="number"
-                                    min="0"
-                                    placeholder="0"
-                                    value={todayEntry[subject.key]}
-                                    onChange={(e) =>
-                                        setTodayEntry({
-                                            ...todayEntry,
-                                            [subject.key]: e.target.value === '' ? '' : parseInt(e.target.value),
-                                        })
-                                    }
-                                    className="w-full px-4 py-3 border-2 border-rose-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-transparent text-gray-900 font-semibold text-lg"
-                                />
-                            </div>
-                        ))}
+                        {SUBJECTS.map((subject, index) => {
+                            // ORC ve THC'yi yan yana göstermek için
+                            if (subject.key === 'orc') {
+                                const thcSubject = SUBJECTS.find(s => s.key === 'thc')
+                                return (
+                                    <div key="orc-thc" className="grid grid-cols-2 gap-4 md:col-span-2">
+                                        {/* ORC */}
+                                        <div>
+                                            <label className="block text-sm font-bold text-gray-900 mb-2">
+                                                {subject.label}
+                                            </label>
+                                            <div className="flex items-center">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={todayEntry[subject.key] === 1}
+                                                    onChange={(e) =>
+                                                        setTodayEntry({
+                                                            ...todayEntry,
+                                                            [subject.key]: e.target.checked ? 1 : 0,
+                                                        })
+                                                    }
+                                                    className="w-10 h-10 appearance-none border-2 border-rose-300 rounded-lg focus:outline-none focus:ring-2 cursor-pointer focus:ring-rose-500 focus:border-transparent checked:bg-rose-500 checked:border-rose-500 checked:bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAxNiAxNiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNMTMuNSA0TDYgMTEuNUwyLjUgOCIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48L3N2Zz4=')] bg-center bg-no-repeat"
+                                                />
+                                            </div>
+                                        </div>
+                                        {/* THC */}
+                                        {thcSubject && (
+                                            <div>
+                                                <label className="block text-sm font-bold text-gray-900 mb-2">
+                                                    {thcSubject.label}
+                                                </label>
+                                                <div className="flex items-center">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={todayEntry[thcSubject.key] === 1}
+                                                        onChange={(e) =>
+                                                            setTodayEntry({
+                                                                ...todayEntry,
+                                                                [thcSubject.key]: e.target.checked ? 1 : 0,
+                                                            })
+                                                        }
+                                                        className="w-10 h-10 appearance-none border-2 border-rose-300 rounded-lg focus:outline-none focus:ring-2 cursor-pointer focus:ring-rose-500 focus:border-transparent checked:bg-rose-500 checked:border-rose-500 checked:bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAxNiAxNiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNMTMuNSA0TDYgMTEuNUwyLjUgOCIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48L3N2Zz4=')] bg-center bg-no-repeat"
+                                                    />
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                )
+                            }
+
+                            // THC'yi atla, çünkü ORC ile birlikte gösterildi
+                            if (subject.key === 'thc') {
+                                return null
+                            }
+
+                            // Diğer inputlar
+                            return (
+                                <div key={subject.key}>
+                                    <label className="block text-sm font-bold text-gray-900 mb-2">
+                                        {subject.label}
+                                    </label>
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        value={todayEntry[subject.key]}
+                                        onChange={(e) =>
+                                            setTodayEntry({
+                                                ...todayEntry,
+                                                [subject.key]: e.target.value,
+                                            })
+                                        }
+                                        className="w-full px-3 py-2 border-2 border-rose-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-transparent text-gray-900 font-semibold text-base"
+                                    />
+                                </div>
+                            )
+                        })}
                     </div>
                     <button
                         onClick={handleSave}
