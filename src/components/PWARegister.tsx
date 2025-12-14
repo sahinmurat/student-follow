@@ -14,7 +14,7 @@ export default function PWARegister() {
                 .register('/sw.js', { updateViaCache: 'none' })
                 .then((registration) => {
                     console.log('Service Worker registered:', registration)
-                    
+
                     // Yeni Service Worker yüklendiğinde otomatik güncelle
                     registration.addEventListener('updatefound', () => {
                         const newWorker = registration.installing
@@ -28,10 +28,10 @@ export default function PWARegister() {
                             })
                         }
                     })
-                    
+
                     // Her sayfada güncelleme kontrolü yap
                     registration.update()
-                    
+
                     // Her 5 dakikada bir güncelleme kontrolü yap
                     setInterval(() => {
                         registration.update()
@@ -40,7 +40,7 @@ export default function PWARegister() {
                 .catch((error) => {
                     console.log('Service Worker registration failed:', error)
                 })
-                
+
             // Service Worker değiştiğinde sayfayı yenile
             let refreshing = false
             navigator.serviceWorker.addEventListener('controllerchange', () => {
