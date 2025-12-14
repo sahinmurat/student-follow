@@ -62,6 +62,7 @@ export default function PWARegister() {
 
         // PWA kurulum isteğini yakalama
         const handleBeforeInstallPrompt = (e: any) => {
+            console.log('beforeinstallprompt event triggered!')
             // Tarayıcının otomatik istemini engelle
             e.preventDefault()
             // İstemi daha sonra kullanmak üzere sakla
@@ -69,6 +70,11 @@ export default function PWARegister() {
             // Kullanıcıya kurulum butonunu göster
             setShowInstallPrompt(true)
         }
+        
+        // Debug için
+        console.log('PWA Register initialized')
+        console.log('Is iOS:', isIosDevice && !isStandalone)
+        console.log('Service Worker supported:', 'serviceWorker' in navigator)
 
         window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
 
