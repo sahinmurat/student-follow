@@ -411,13 +411,13 @@ export default function StudentDashboard() {
                             />
                         </div>
                     </div>
-                    <div className="grid grid-cols-3 md:grid-cols-5 gap-4 mb-6">
+                    <div className="grid grid-cols-3 md:grid-cols-9 gap-3 mb-6">
                         {SUBJECTS.map((subject, index) => {
                             // ORC ve THC'yi yan yana göstermek için
                             if (subject.key === 'orc') {
                                 const thcSubject = SUBJECTS.find(s => s.key === 'thc')
                                 return (
-                                    <div key="orc-thc" className="grid grid-cols-2 gap-4 col-span-2 md:col-span-2">
+                                    <div key="orc-thc" className="grid grid-cols-2 gap-2 col-span-2 md:col-span-2">
                                         {/* ORC */}
                                         <div>
                                             <label className="block text-sm font-bold text-gray-900 mb-2">
@@ -470,7 +470,7 @@ export default function StudentDashboard() {
                             // Diğer inputlar
                             return (
                                 <div key={subject.key}>
-                                    <label className="block text-sm font-bold text-gray-900 mb-2">
+                                    <label className="block text-sm font-bold text-gray-900 mb-1">
                                         {subject.label}
                                     </label>
                                     <input
@@ -483,7 +483,7 @@ export default function StudentDashboard() {
                                                 [subject.key]: e.target.value,
                                             })
                                         }
-                                        className="w-full px-3 py-2 border-2 border-rose-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-transparent text-gray-900 font-semibold text-base"
+                                        className="w-full md:w-20 px-2 py-2 border-2 border-rose-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-transparent text-gray-900 font-semibold text-base"
                                     />
                                 </div>
                             )
