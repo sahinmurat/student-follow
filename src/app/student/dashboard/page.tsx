@@ -67,6 +67,7 @@ export default function StudentDashboard() {
     const [saving, setSaving] = useState(false)
     const [showSuccess, setShowSuccess] = useState(false)
     const [selectedNote, setSelectedNote] = useState<{ date: string, note: string } | null>(null)
+    const [visibleCount, setVisibleCount] = useState(5)
     const router = useRouter()
     const supabase = createClient()
 
@@ -316,86 +317,12 @@ export default function StudentDashboard() {
             </nav>
 
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                {/* Dashboard Note */}
-                <div className="bg-white rounded-xl shadow-lg px-6 pt-4 pb-3 mb-8 border-2 border-rose-200 relative">
-                    <div className="flex items-start gap-3">
-                        <div className="flex-1">
-                            {isEditingNote ? (
-                                <textarea
-                                    value={dashboardNote}
-                                    onChange={(e) => setDashboardNote(e.target.value)}
-                                    className="w-full px-0 py-2 border-0 focus:outline-none text-gray-900 font-medium resize-none bg-transparent"
-                                    placeholder="Kişisel notunuzu girebilirsiniz..."
-                                    autoFocus
-                                    rows={2}
-                                />
-                            ) : (
-                                <div
-                                    className="w-full py-2 border-0 text-gray-900 font-medium whitespace-pre-wrap cursor-pointer hover:bg-rose-50 transition-colors min-h-[3rem] rounded-lg"
-                                    onClick={() => setIsEditingNote(true)}
-                                >
-                                    {dashboardNote || <span className="text-gray-400 italic">Kişisel notunuzu girebilirsiniz...</span>}
-                                </div>
-                            )}
-                        </div>
-                        <button
-                            onClick={() => {
-                                if (isEditingNote) {
-                                    handleSaveNote()
-                                } else {
-                                    setIsEditingNote(true)
-                                }
-                            }}
-                            disabled={savingNote}
-                            className="flex-shrink-0 p-2 text-rose-600 hover:bg-rose-50 rounded-full transition-colors mt-1"
-                            title={isEditingNote ? "Kaydet" : "Düzenle"}
-                        >
-                            {savingNote ? (
-                                // Loading Spinner
-                                <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                </svg>
-                            ) : showNoteSuccess ? (
-                                // Checkmark
-                                <svg className="h-5 w-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                </svg>
-                            ) : isEditingNote ? (
-                                // Save Icon
-                                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
-                                </svg>
-                            ) : (
-                                // Pencil Icon
-                                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                                </svg>
-                            )}
-                        </button>
-                    </div>
-                </div>
-
-                {/* Statistics Summary */}
-                <div className="bg-white rounded-xl shadow-md p-4 mb-6 border border-rose-200">
-                    <div className="grid grid-cols-2 gap-4 divide-x divide-rose-100">
-                        <div className="text-center">
-                            <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Haftalık</h3>
-                            <p className="text-2xl font-bold text-rose-700">{weeklyTotal}</p>
-                        </div>
-                        <div className="text-center pl-4">
-                            <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Aylık</h3>
-                            <p className="text-2xl font-bold text-pink-700">{monthlyTotal}</p>
-                        </div>
-                    </div>
-                </div>
-
                 {/* Today's Entry Form */}
                 <div className="bg-white rounded-xl shadow-lg p-6 mb-8 border-2 border-rose-200">
                     <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
                         <h2 className="text-xl font-bold text-gray-900">
                             {selectedDate === format(new Date(), 'yyyy-MM-dd')
-                                ? `Bugünün Soruları (${format(new Date(), 'dd MMMM yyyy', { locale: tr })})`
+                                ? `Girilen Veriler (${format(new Date(), 'dd MMMM yyyy', { locale: tr })})`
                                 : `${format(new Date(selectedDate), 'dd MMMM yyyy', { locale: tr })} Kayıtları`
                             }
                         </h2>
@@ -529,6 +456,83 @@ export default function StudentDashboard() {
                     </button>
                 </div>
 
+                {/* Dashboard Note */}
+                <label className="block text-sm font-bold text-gray-900 mb-2">
+                    Genel Plan-Hedef-Not
+                </label>
+                <div className="bg-white rounded-xl shadow-lg px-6 pt-4 pb-3 mb-8 border-2 border-rose-200 relative">
+                    <div className="flex items-start gap-3">
+                        <div className="flex-1">
+                            {isEditingNote ? (
+                                <textarea
+                                    value={dashboardNote}
+                                    onChange={(e) => setDashboardNote(e.target.value)}
+                                    className="w-full px-0 py-2 border-0 focus:outline-none text-gray-900 font-medium resize-none bg-transparent"
+                                    placeholder="Kişisel notunuzu girebilirsiniz..."
+                                    autoFocus
+                                    rows={2}
+                                />
+                            ) : (
+                                <div
+                                    className="w-full py-2 border-0 text-gray-900 font-medium whitespace-pre-wrap cursor-pointer hover:bg-rose-50 transition-colors min-h-[3rem] rounded-lg"
+                                    onClick={() => setIsEditingNote(true)}
+                                >
+                                    {dashboardNote || <span className="text-gray-400 italic">Kişisel notunuzu girebilirsiniz...</span>}
+                                </div>
+                            )}
+                        </div>
+                        <button
+                            onClick={() => {
+                                if (isEditingNote) {
+                                    handleSaveNote()
+                                } else {
+                                    setIsEditingNote(true)
+                                }
+                            }}
+                            disabled={savingNote}
+                            className="flex-shrink-0 p-2 text-rose-600 hover:bg-rose-50 rounded-full transition-colors mt-1"
+                            title={isEditingNote ? "Kaydet" : "Düzenle"}
+                        >
+                            {savingNote ? (
+                                // Loading Spinner
+                                <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                            ) : showNoteSuccess ? (
+                                // Checkmark
+                                <svg className="h-5 w-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                </svg>
+                            ) : isEditingNote ? (
+                                // Save Icon
+                                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+                                </svg>
+                            ) : (
+                                // Pencil Icon
+                                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                </svg>
+                            )}
+                        </button>
+                    </div>
+                </div>
+
+                {/* Statistics Summary */}
+                <div className="bg-white rounded-xl shadow-md p-4 mb-6 border border-rose-200">
+                    <div className="grid grid-cols-2 gap-4 divide-x divide-rose-100">
+                        <div className="text-center">
+                            <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Haftalık</h3>
+                            <p className="text-2xl font-bold text-rose-700">{weeklyTotal}</p>
+                        </div>
+                        <div className="text-center pl-4">
+                            <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Aylık</h3>
+                            <p className="text-2xl font-bold text-pink-700">{monthlyTotal}</p>
+                        </div>
+                    </div>
+                </div>
+
                 {/* Recent Entries */}
                 <div className="bg-white rounded-xl shadow-lg p-6 border-2 border-rose-200">
                     <h2 className="text-2xl font-bold mb-6 text-gray-900">Girilen Kayıtlar</h2>
@@ -578,7 +582,7 @@ export default function StudentDashboard() {
                                     </tr>
                                 </thead>
                                 <tbody className="bg-white divide-y divide-rose-100">
-                                    {entries.map((entry) => (
+                                    {entries.slice(0, visibleCount).map((entry) => (
                                         <tr key={entry.id} className="hover:bg-rose-50">
                                             <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
                                                 {format(new Date(entry.date), 'dd MMMM yyyy', { locale: tr })}
@@ -630,9 +634,31 @@ export default function StudentDashboard() {
                                     ))}
                                 </tbody>
                             </table>
+                            <div className="flex items-center justify-end gap-3 mt-4">
+                                <p className="text-sm text-gray-600">Toplam kayıt: {entries.length}</p>
+                                {entries.length > 3 && (
+                                    <div className="flex items-center gap-2">
+                                        <button
+                                            onClick={() => setVisibleCount(prev => Math.max(5, prev - 5))}
+                                            disabled={visibleCount <= 5}
+                                            className="px-3 py-1 bg-rose-100 text-rose-700 rounded-md text-sm font-semibold disabled:opacity-50"
+                                        >
+                                            Daha az
+                                        </button>
+                                        <button
+                                            onClick={() => setVisibleCount(prev => Math.min(entries.length, prev + 5))}
+                                            disabled={visibleCount >= entries.length}
+                                            className="px-3 py-1 bg-rose-700 text-white rounded-md text-sm font-semibold disabled:opacity-50"
+                                        >
+                                            Daha fazla
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     )}
                 </div>
+
 
                 {/* Charts Section */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
