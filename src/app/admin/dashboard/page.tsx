@@ -188,15 +188,15 @@ export default function AdminDashboard() {
                     </div>
                     <div className="bg-cyan-600 rounded-xl shadow-lg p-6 text-white">
                         <h3 className="text-sm font-bold mb-2">Bugün Toplam</h3>
-                        <p className="text-4xl font-bold">{stats.todayTotal}</p>
+                        <p className="text-4xl font-bold">{Math.trunc(stats.todayTotal)}</p>
                     </div>
                     <div className="bg-sky-600 rounded-xl shadow-lg p-6 text-white">
                         <h3 className="text-sm font-bold mb-2">Haftalık Toplam</h3>
-                        <p className="text-4xl font-bold">{stats.weeklyTotal}</p>
+                        <p className="text-4xl font-bold">{Math.trunc(stats.weeklyTotal)}</p>
                     </div>
                     <div className="bg-teal-700 rounded-xl shadow-lg p-6 text-white">
                         <h3 className="text-sm font-bold mb-2">Aylık Toplam</h3>
-                        <p className="text-4xl font-bold">{stats.monthlyTotal}</p>
+                        <p className="text-4xl font-bold">{Math.trunc(stats.monthlyTotal)}</p>
                     </div>
                 </div>
 
@@ -272,16 +272,16 @@ export default function AdminDashboard() {
                                             <div className="text-sm font-bold text-gray-900">{student.full_name}</div>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            <span className="text-sm font-bold text-cyan-700">{student.todayPoints}</span>
+                                            <span className="text-sm font-bold text-cyan-700">{Math.trunc(student.todayPoints)}</span>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            <span className="text-sm font-bold text-teal-700">{student.weeklyPoints}</span>
+                                            <span className="text-sm font-bold text-teal-700">{Math.trunc(student.weeklyPoints)}</span>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            <span className="text-sm font-bold text-sky-700">{student.monthlyPoints}</span>
+                                            <span className="text-sm font-bold text-sky-700">{Math.trunc(student.monthlyPoints)}</span>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            <span className="text-lg font-bold text-cyan-800">{student.totalPoints}</span>
+                                            <span className="text-lg font-bold text-cyan-800">{Math.trunc(student.totalPoints)}</span>
                                         </td>
                                     </tr>
                                 ))}
@@ -343,16 +343,16 @@ export default function AdminDashboard() {
                                             <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
                                                 {student?.full_name || 'Unknown'}
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-700">{entry.kk}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-700">{entry.rsl}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-700">{entry.prt}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-700">{entry.cvs}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-700">{entry.orc}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-700">{entry.thc}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-700">{entry.alm}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-700">{entry.trk}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-700">{Math.trunc(entry.kk)}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-700">{Math.trunc(entry.rsl)}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-700">{Math.trunc(entry.prt)}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-700">{Math.trunc(entry.cvs)}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-700">{Math.trunc(entry.orc)}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-700">{Math.trunc(entry.thc)}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-700">{Math.trunc(entry.alm)}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-700">{Math.trunc(entry.trk)}</td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-teal-700">
-                                                {entry.total_points}
+                                                {Math.trunc(entry.total_points)}
                                             </td>
                                         </tr>
                                     )

@@ -17,6 +17,7 @@ interface DailyEntry {
     orc: number
     thc: number
     gunluk_kk: number
+    gunluk_zkr: number
     alm: number
     trk: number
     slvt: number
@@ -39,12 +40,12 @@ const SUBJECTS = [
     { key: 'orc', label: 'ORC' },
     { key: 'thc', label: 'THC' },
     { key: 'gunluk_kk', label: 'Günlük-KK' },
+    { key: 'gunluk_zkr', label: 'Günlük-ZKR' },
     { key: 'alm', label: 'ALM' },
     { key: 'trk', label: 'TRK' },
     { key: 'slvt', label: 'SLVT' },
 ] as const
 
-// ✅ Turkuaz tema
 const THEME = {
     pageBg: 'bg-teal-50',
     navBg: 'bg-teal-900',
@@ -65,7 +66,6 @@ const THEME = {
 const CHECKBOX_CLASS =
     "w-10 h-9 appearance-none border-2 border-teal-300 rounded-lg focus:outline-none focus:ring-2 cursor-pointer focus:ring-teal-500 focus:border-transparent checked:bg-teal-500 checked:border-teal-500 checked:bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAxNiAxNiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNMTMuNSA0TDYgMTEuNUwyLjUgOCIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48L3N2Zz4=')] bg-center bg-no-repeat"
 
-// ✅ 3 hane (0–999) için input: küçük + kompakt
 const SMALL_NUMBER_INPUT_CLASS =
     `w-16 md:w-20 px-2 py-1 border-2 ${THEME.borderMid} rounded-lg focus:outline-none focus:ring-2 ${THEME.focusRing} focus:border-transparent text-gray-900 font-semibold text-base text-center`
 
@@ -81,6 +81,7 @@ export default function StudentDashboard() {
         orc: 0,
         thc: 0,
         gunluk_kk: 0,
+        gunluk_zkr: 0,
         alm: '',
         trk: '',
         slvt: '',
@@ -101,7 +102,6 @@ export default function StudentDashboard() {
     const router = useRouter()
     const supabase = createClient()
 
-    // ✅ 3 hane sınırı (0–999) ve sadece rakam
     const setThreeDigitNumber = (key: string, raw: string) => {
         const digitsOnly = raw.replace(/[^\d]/g, '').slice(0, 3)
         setFormData((prev: any) => ({ ...prev, [key]: digitsOnly }))
@@ -123,6 +123,7 @@ export default function StudentDashboard() {
                 orc: entry.orc,
                 thc: entry.thc,
                 gunluk_kk: entry.gunluk_kk ?? 0,
+                gunluk_zkr: entry.gunluk_zkr ?? 0,
                 alm: entry.alm,
                 trk: entry.trk,
                 slvt: entry.slvt,
@@ -137,6 +138,7 @@ export default function StudentDashboard() {
                 orc: 0,
                 thc: 0,
                 gunluk_kk: 0,
+                gunluk_zkr: 0,
                 alm: '',
                 trk: '',
                 slvt: '',
@@ -153,7 +155,6 @@ export default function StudentDashboard() {
                 return
             }
 
-            // Load profile
             const { data: profileData } = await supabase
                 .from('profiles')
                 .select('full_name, email, role, dashboard_note')
@@ -169,7 +170,6 @@ export default function StudentDashboard() {
             setProfile(profileData)
             setDashboardNote(profileData.dashboard_note || '')
 
-            // Load all entries
             const { data: entriesData, error: entriesError } = await supabase
                 .from('daily_entries')
                 .select('*')
@@ -200,7 +200,6 @@ export default function StudentDashboard() {
 
             if (error) throw error
 
-            // Update local profile state
             if (profile) {
                 setProfile({ ...profile, dashboard_note: dashboardNote })
             }
@@ -234,6 +233,7 @@ export default function StudentDashboard() {
                     orc: Number(formData.orc) || 0,
                     thc: Number(formData.thc) || 0,
                     gunluk_kk: Number(formData.gunluk_kk) || 0,
+                    gunluk_zkr: Number(formData.gunluk_zkr) || 0,
                     alm: Number(formData.alm) || 0,
                     trk: Number(formData.trk) || 0,
                     slvt: Number(formData.slvt) || 0,
@@ -289,7 +289,6 @@ export default function StudentDashboard() {
         return Math.trunc(total)
     }, [entries])
 
-    // Prepare chart data
     const weeklyChartData = useMemo(() => {
         const endDate = new Date()
         const startDate = subDays(endDate, 6)
@@ -363,7 +362,6 @@ export default function StudentDashboard() {
             </nav>
 
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                {/* Today's Entry Form */}
                 <div className={`bg-white rounded-xl shadow-lg p-6 mb-8 border-2 ${THEME.borderSoft}`}>
                     <div className="flex flex-col md:flex-row md:items-center justify-between mb-5 gap-4">
                         <h2 className="text-xl font-bold text-gray-900">
@@ -383,91 +381,88 @@ export default function StudentDashboard() {
                         </div>
                     </div>
 
-                    {/* ✅ boşluklar sıkı: gap-2 */}
-                    <div className="grid grid-cols-3 md:grid-cols-9 gap-2 mb-6">
-                        {SUBJECTS.map((subject) => {
-                            // ✅ CVS + ORC + THC + Günlük-KK aynı satır (mobilde 4'lü)
-                            if (subject.key === 'cvs') {
-                                return (
-                                    <div key="cvs-orc-thc-gunlukkk" className="col-span-3 md:col-span-4 grid grid-cols-4 gap-1">
-                                        {/* CVS */}
-                                        <div className="flex flex-col items-center">
-                                            <label className="text-xs font-bold text-gray-900 mb-1">CVS</label>
-                                            <input
-                                                type="text"
-                                                inputMode="numeric"
-                                                pattern="\d*"
-                                                value={formData.cvs}
-                                                onChange={(e) => setThreeDigitNumber('cvs', e.target.value)}
-                                                className={SMALL_NUMBER_INPUT_CLASS}
-                                                placeholder="0"
-                                            />
-                                        </div>
-
-                                        {/* ORC checkbox */}
-                                        <div className="flex flex-col items-center">
-                                            <label className="text-xs font-bold text-gray-900 mb-1">ORC</label>
-                                            <input
-                                                type="checkbox"
-                                                checked={formData.orc === 1}
-                                                onChange={(e) => setFormData({ ...formData, orc: e.target.checked ? 1 : 0 })}
-                                                className={CHECKBOX_CLASS}
-                                            />
-                                        </div>
-
-                                        {/* THC checkbox */}
-                                        <div className="flex flex-col items-center">
-                                            <label className="text-xs font-bold text-gray-900 mb-1">THC</label>
-                                            <input
-                                                type="checkbox"
-                                                checked={formData.thc === 1}
-                                                onChange={(e) => setFormData({ ...formData, thc: e.target.checked ? 1 : 0 })}
-                                                className={CHECKBOX_CLASS}
-                                            />
-                                        </div>
-
-                                        {/* Günlük-KK checkbox */}
-                                        <div className="flex flex-col items-center">
-                                            <label className="text-xs font-bold text-gray-900 mb-1">Günlük-KK</label>
-                                            <input
-                                                type="checkbox"
-                                                checked={formData.gunluk_kk === 1}
-                                                onChange={(e) => setFormData({ ...formData, gunluk_kk: e.target.checked ? 1 : 0 })}
-                                                className={CHECKBOX_CLASS}
-                                            />
-                                        </div>
-                                    </div>
-                                )
-                            }
-
-                            // ✅ Bu 3’ünü ayrı ayrı render etme
-                            if (subject.key === 'orc' || subject.key === 'thc' || subject.key === 'gunluk_kk') {
-                                return null
-                            }
-
-                            // ✅ Diğer inputlar: 3 hane + küçük + ortalı
-                            return (
-                                <div key={subject.key} className="flex flex-col items-center">
-                                    <label className="text-xs font-bold text-gray-900 mb-1">{subject.label}</label>
-                                    <input
-                                        type="text"
-                                        inputMode="numeric"
-                                        pattern="\d*"
-                                        value={formData[subject.key]}
-                                        onChange={(e) => setThreeDigitNumber(subject.key, e.target.value)}
-                                        className={SMALL_NUMBER_INPUT_CLASS}
-                                        placeholder="0"
-                                    />
-                                </div>
-                            )
-                        })}
+                    {/* ✅ ÜST SATIR: tüm sayı inputları (CVS burada) */}
+                    <div className="grid grid-cols-3 md:grid-cols-9 gap-2 mb-3">
+                        {SUBJECTS.filter(s =>
+                            !['orc', 'thc', 'gunluk_kk', 'gunluk_zkr'].includes(s.key)
+                        ).map((subject) => (
+                            <div key={subject.key} className="flex flex-col items-center">
+                                <label className="text-xs font-bold text-gray-900 mb-1">{subject.label}</label>
+                                <input
+                                    type="text"
+                                    inputMode="numeric"
+                                    pattern="\d*"
+                                    value={formData[subject.key]}
+                                    onChange={(e) => setThreeDigitNumber(subject.key, e.target.value)}
+                                    className={SMALL_NUMBER_INPUT_CLASS}
+                                    placeholder="0"
+                                />
+                            </div>
+                        ))}
                     </div>
 
-                    {/* Notes Input */}
+                    {/* ✅ ALT SATIR: sadece checkboxlar */}
+                    <div className="grid grid-cols-4 md:grid-cols-4 gap-1 mb-6 max-w-md">
+                        <div className="flex flex-col items-center">
+                            <label className="text-xs font-bold text-gray-900 mb-1">ORC</label>
+                            <input
+                                type="checkbox"
+                                checked={formData.orc === 1}
+                                onChange={(e) => setFormData({ ...formData, orc: e.target.checked ? 1 : 0 })}
+                                className={CHECKBOX_CLASS}
+                            />
+                        </div>
+
+                        <div className="flex flex-col items-center">
+                            <label className="text-xs font-bold text-gray-900 mb-1">THC</label>
+                            <input
+                                type="checkbox"
+                                checked={formData.thc === 1}
+                                onChange={(e) => setFormData({ ...formData, thc: e.target.checked ? 1 : 0 })}
+                                className={CHECKBOX_CLASS}
+                            />
+                        </div>
+
+                        <div className="flex flex-col items-center">
+                            <label className="text-xs font-bold text-gray-900 mb-1">Günlük-KK</label>
+                            <input
+                                type="checkbox"
+                                checked={formData.gunluk_kk === 1}
+                                onChange={(e) => {
+                                    const checked = e.target.checked
+
+                                    setFormData((prev: any) => {
+                                        const currentKk = Math.max(0, Math.min(999, Number(prev.kk) || 0))
+                                        const nextKk = checked
+                                            ? Math.min(999, currentKk + 1)
+                                            : Math.max(0, currentKk - 1)
+
+                                        return {
+                                            ...prev,
+                                            gunluk_kk: checked ? 1 : 0,
+                                            // kk inputu string kullandığın için stringe çeviriyoruz
+                                            kk: String(nextKk),
+                                        }
+                                    })
+                                }}
+                                className={CHECKBOX_CLASS}
+                            />
+                        </div>
+
+
+                        <div className="flex flex-col items-center">
+                            <label className="text-xs font-bold text-gray-900 mb-1">Günlük-ZKR</label>
+                            <input
+                                type="checkbox"
+                                checked={formData.gunluk_zkr === 1}
+                                onChange={(e) => setFormData({ ...formData, gunluk_zkr: e.target.checked ? 1 : 0 })}
+                                className={CHECKBOX_CLASS}
+                            />
+                        </div>
+                    </div>
+
                     <div className="mb-6">
-                        <label className="block text-sm font-bold text-gray-900 mb-2">
-                            Günün Notları
-                        </label>
+                        <label className="block text-sm font-bold text-gray-900 mb-2">Günün Notları</label>
                         <textarea
                             value={formData.notes}
                             onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
@@ -486,6 +481,7 @@ export default function StudentDashboard() {
                             (Number(formData.orc) || 0) === 0 &&
                             (Number(formData.thc) || 0) === 0 &&
                             (Number(formData.gunluk_kk) || 0) === 0 &&
+                            (Number(formData.gunluk_zkr) || 0) === 0 &&
                             (Number(formData.alm) || 0) === 0 &&
                             (Number(formData.trk) || 0) === 0 &&
                             (Number(formData.slvt) || 0) === 0
@@ -504,9 +500,7 @@ export default function StudentDashboard() {
                 </div>
 
                 {/* Dashboard Note */}
-                <label className="block text-sm font-bold text-gray-900 mb-2">
-                    Genel Plan-Hedef-Not
-                </label>
+                <label className="block text-sm font-bold text-gray-900 mb-2">Genel Plan-Hedef-Not</label>
                 <div className={`bg-white rounded-xl shadow-lg px-6 pt-4 pb-3 mb-8 border-2 ${THEME.borderSoft} relative`}>
                     <div className="flex items-start gap-3">
                         <div className="flex-1">
@@ -531,11 +525,8 @@ export default function StudentDashboard() {
 
                         <button
                             onClick={() => {
-                                if (isEditingNote) {
-                                    handleSaveNote()
-                                } else {
-                                    setIsEditingNote(true)
-                                }
+                                if (isEditingNote) handleSaveNote()
+                                else setIsEditingNote(true)
                             }}
                             disabled={savingNote}
                             className={`flex-shrink-0 p-2 ${THEME.textPrimary} ${THEME.btnSoftHover} rounded-full transition-colors mt-1`}
@@ -595,6 +586,7 @@ export default function StudentDashboard() {
                                         <th className="px-6 py-3 text-left text-sm font-bold text-gray-900 uppercase">ORC</th>
                                         <th className="px-6 py-3 text-left text-sm font-bold text-gray-900 uppercase">THC</th>
                                         <th className="px-6 py-3 text-left text-sm font-bold text-gray-900 uppercase">Günlük-KK</th>
+                                        <th className="px-6 py-3 text-left text-sm font-bold text-gray-900 uppercase">Günlük-ZKR</th>
                                         <th className="px-6 py-3 text-left text-sm font-bold text-gray-900 uppercase">ALM</th>
                                         <th className="px-6 py-3 text-left text-sm font-bold text-gray-900 uppercase">TRK</th>
                                         <th className="px-6 py-3 text-left text-sm font-bold text-gray-900 uppercase">SLVT</th>
@@ -615,6 +607,7 @@ export default function StudentDashboard() {
                                             <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">{entry.orc}</td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">{entry.thc}</td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">{entry.gunluk_kk}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">{entry.gunluk_zkr}</td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">{entry.alm}</td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">{entry.trk}</td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">{entry.slvt}</td>
@@ -664,9 +657,7 @@ export default function StudentDashboard() {
                     )}
                 </div>
 
-                {/* Charts Section */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
-                    {/* Weekly Chart */}
                     <div className={`bg-white rounded-xl shadow-lg p-6 border-2 ${THEME.borderSoft}`}>
                         <h3 className="text-xl font-bold mb-4 text-gray-900">Haftalık Gelişim</h3>
                         <div className="h-64">
@@ -682,7 +673,6 @@ export default function StudentDashboard() {
                         </div>
                     </div>
 
-                    {/* Monthly Chart */}
                     <div className={`bg-white rounded-xl shadow-lg p-6 border-2 ${THEME.borderSoft}`}>
                         <h3 className="text-xl font-bold mb-4 text-gray-900">Aylık Gelişim</h3>
                         <div className="h-64">
@@ -700,7 +690,6 @@ export default function StudentDashboard() {
                 </div>
             </main>
 
-            {/* Not Modal */}
             {selectedNote && (
                 <div
                     className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
