@@ -70,10 +70,16 @@ export default function PWARegister() {
             setIsIOS(true);
         }
 
+        // beforeinstallprompt event'ini dinle (debug için)
+        window.addEventListener('beforeinstallprompt', (e) => {
+            console.log('✅ beforeinstallprompt event fired! PWA is installable.')
+        })
+
         // Debug için
         console.log('PWA Register initialized')
         console.log('Is iOS:', isIosDevice && !isStandalone)
         console.log('Service Worker supported:', 'serviceWorker' in navigator)
+        console.log('Is Standalone:', isStandalone)
 
         // Uygulama başarıyla kurulduğunda
         window.addEventListener('appinstalled', () => {
