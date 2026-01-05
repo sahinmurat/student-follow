@@ -12,7 +12,7 @@ export default function PWARegister() {
         // Standalone mod kontrolü
         const isStandalone = window.matchMedia('(display-mode: standalone)').matches ||
             (window.navigator as any).standalone === true // iOS Safari için
-        
+
         if (isStandalone) {
             console.log('App is in standalone mode')
             return // Standalone modda hiçbir prompt gösterme
