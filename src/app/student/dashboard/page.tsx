@@ -261,42 +261,32 @@ export default function StudentDashboard() {
     }
 
     const weeklyTotal = useMemo(() => {
-        return entries
+        const today = new Date()
+        const weekAgo = new Date()
+        weekAgo.setDate(weekAgo.getDate() - 7)
+
+        const total = entries
             .filter(e => {
                 const entryDate = new Date(e.date)
-                const weekAgo = new Date()
-                weekAgo.setDate(weekAgo.getDate() - 7)
-                return entryDate >= weekAgo
+                return entryDate >= weekAgo && entryDate <= today
             })
             .reduce((sum, e) => sum + e.total_points, 0)
-        // truncate decimals if any
-        const total = Math.trunc(entries
-            .filter(e => {
-                const entryDate = new Date(e.date)
-                const weekAgo = new Date()
-                weekAgo.setDate(weekAgo.getDate() - 7)
-                return entryDate >= weekAgo
-            })
-            .reduce((sum, e) => sum + e.total_points, 0))
-        return total
+
+        return Math.trunc(total)
     }, [entries])
 
     const monthlyTotal = useMemo(() => {
-        return entries
+        const today = new Date()
+        const monthStart = startOfMonth(new Date())
+
+        const total = entries
             .filter(e => {
                 const entryDate = new Date(e.date)
-                const monthStart = startOfMonth(new Date())
-                return entryDate >= monthStart
+                return entryDate >= monthStart && entryDate <= today
             })
             .reduce((sum, e) => sum + e.total_points, 0)
-        const mTotal = Math.trunc(entries
-            .filter(e => {
-                const entryDate = new Date(e.date)
-                const monthStart = startOfMonth(new Date())
-                return entryDate >= monthStart
-            })
-            .reduce((sum, e) => sum + e.total_points, 0))
-        return mTotal
+
+        return Math.trunc(total)
     }, [entries])
 
     // Prepare chart data
@@ -388,7 +378,6 @@ export default function StudentDashboard() {
                                 type="date"
                                 value={selectedDate}
                                 onChange={(e) => setSelectedDate(e.target.value)}
-                                max={format(new Date(), 'yyyy-MM-dd')}
                                 className={`px-3 py-2 border-2 ${THEME.borderMid} rounded-lg focus:outline-none focus:ring-2 ${THEME.focusRing} focus:border-transparent text-gray-900 font-semibold`}
                             />
                         </div>
