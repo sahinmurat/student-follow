@@ -2,16 +2,20 @@
 
 import { useEffect, useState } from 'react'
 
+// LocalStorage key
+const IOS_PROMPT_DISMISSED_KEY = 'pwa-ios-prompt-dismissed'
+
 export default function PWARegister() {
-    const [deferredPrompt, setDeferredPrompt] = useState<any>(null)
-    const [showInstallPrompt, setShowInstallPrompt] = useState(false)
     const [isIOS, setIsIOS] = useState(false)
 
     useEffect(() => {
         // Standalone mod kontrolü
-        const isStandalone = window.matchMedia('(display-mode: standalone)').matches
+        const isStandalone = window.matchMedia('(display-mode: standalone)').matches ||
+            (window.navigator as any).standalone === true // iOS Safari için
+        
         if (isStandalone) {
             console.log('App is in standalone mode')
+            return // Standalone modda hiçbir prompt gösterme
         }
 
         // Service Worker kaydı
@@ -57,23 +61,13 @@ export default function PWARegister() {
             })
         }
 
-        // iOS kontrolü
+        // iOS kontrolü - localStorage'dan dismiss durumunu kontrol et
         const userAgent = window.navigator.userAgent.toLowerCase();
         const isIosDevice = /iphone|ipad|ipod/.test(userAgent);
+        const iosPromptDismissed = localStorage.getItem(IOS_PROMPT_DISMISSED_KEY);
 
-        if (isIosDevice && !isStandalone) {
+        if (isIosDevice && !isStandalone && !iosPromptDismissed) {
             setIsIOS(true);
-        }
-
-        // PWA kurulum isteğini yakalama
-        const handleBeforeInstallPrompt = (e: any) => {
-            console.log('beforeinstallprompt event triggered!')
-            // Tarayıcının otomatik istemini engellemiyoruz ki native bar çıksın
-            // e.preventDefault()
-            // İstemi daha sonra kullanmak üzere sakla
-            setDeferredPrompt(e)
-            // Kullanıcıya kurulum butonunu göster
-            setShowInstallPrompt(true)
         }
 
         // Debug için
@@ -81,79 +75,41 @@ export default function PWARegister() {
         console.log('Is iOS:', isIosDevice && !isStandalone)
         console.log('Service Worker supported:', 'serviceWorker' in navigator)
 
-        window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
-
         // Uygulama başarıyla kurulduğunda
         window.addEventListener('appinstalled', () => {
             console.log('PWA başarıyla kuruldu')
-            setShowInstallPrompt(false)
-            setDeferredPrompt(null)
             setIsIOS(false)
+            // iOS prompt'u da bir daha gösterme
+            localStorage.setItem(IOS_PROMPT_DISMISSED_KEY, 'true')
         })
-
-        return () => {
-            window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
-        }
     }, [])
 
-    const handleInstallClick = async () => {
-        if (!deferredPrompt) return
+    // iOS değilse hiçbir şey gösterme
+    // Android'de browser'ın native install bar'ı otomatik çıkacak
+    if (!isIOS) return null
 
-        // Kurulum istemini göster
-        deferredPrompt.prompt()
-
-        // Kullanıcının seçimini bekle
-        const { outcome } = await deferredPrompt.userChoice
-        console.log(`Kullanıcı seçimi: ${outcome}`)
-
-        // İstemi temizle
-        setDeferredPrompt(null)
-        setShowInstallPrompt(false)
+    const handleIOSDismiss = () => {
+        localStorage.setItem(IOS_PROMPT_DISMISSED_KEY, 'true')
+        setIsIOS(false)
     }
 
-    if (!showInstallPrompt && !isIOS) return null
-
-    if (isIOS) {
-        return (
-            <div className="fixed bottom-4 left-4 right-4 bg-cyan-600 text-white p-4 rounded-lg shadow-lg z-50">
-                <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                        <p className="font-semibold mb-1">Uygulamayı Yükle</p>
-                        <p className="text-sm opacity-90">
-                            Uygulamayı yüklemek için tarayıcı menüsündeki <span className="font-bold">"Paylaş"</span> butonuna tıklayın ve <span className="font-bold">"Ana Ekrana Ekle"</span> seçeneğini seçin.
-                        </p>
-                    </div>
-                    <button
-                        onClick={() => setIsIOS(false)}
-                        className="ml-4 text-white/80 hover:text-white"
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    </button>
-                </div>
-            </div>
-        )
-    }
-
+    // iOS için ana ekrana ekleme talimatı
     return (
-        <div className="fixed bottom-4 left-4 right-4 bg-cyan-600 text-white p-4 rounded-lg shadow-lg z-50 flex items-center justify-between">
-            <div className="flex-1">
-                <p className="font-semibold">Uygulamayı Yükle</p>
-                <p className="text-sm opacity-90">Daha hızlı erişim için telefonunuza ekleyin</p>
-            </div>
-            <div className="flex gap-2">
+        <div className="fixed bottom-4 left-4 right-4 bg-cyan-600 text-white p-4 rounded-lg shadow-lg z-50">
+            <div className="flex items-start justify-between">
+                <div className="flex-1">
+                    <p className="font-semibold mb-1">Uygulamayı Yükle</p>
+                    <p className="text-sm opacity-90">
+                        Uygulamayı yüklemek için tarayıcı menüsündeki <span className="font-bold">"Paylaş"</span> butonuna tıklayın ve <span className="font-bold">"Ana Ekrana Ekle"</span> seçeneğini seçin.
+                    </p>
+                </div>
                 <button
-                    onClick={() => setShowInstallPrompt(false)}
-                    className="px-3 py-1 text-sm bg-white/20 rounded hover:bg-white/30"
+                    onClick={handleIOSDismiss}
+                    className="ml-4 text-white/80 hover:text-white"
                 >
-                    İptal
-                </button>
-                <button
-                    onClick={handleInstallClick}
-                    className="px-4 py-1 text-sm bg-white text-cyan-600 font-semibold rounded hover:bg-gray-100"
-                >
-                    Yükle
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
                 </button>
             </div>
         </div>
